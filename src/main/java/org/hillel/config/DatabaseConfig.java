@@ -51,7 +51,7 @@ public class DatabaseConfig {
         emf.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
         Properties properties = new Properties();
         properties.put("hibernate.dialect", PostgreSQL10Dialect.class.getName());
-        properties.put("hibernate.hbm2ddl.auto","create"); //create create-drop update validate
+        properties.put("hibernate.hbm2ddl.auto","create-drop"); //create create-drop update validate
         properties.put("hibernate.show_sql","true");
         emf.setJpaProperties(properties);
         return emf;
