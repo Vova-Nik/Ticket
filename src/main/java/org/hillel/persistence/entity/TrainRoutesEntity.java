@@ -62,7 +62,7 @@ public class TrainRoutesEntity {
         return false;
     }
 
-    public boolean isValid(TrainRoutesEntity entity) {
+    public boolean isValid() {
         if (routeNumber == null) return false;
         if (stationFrom == null) return false;
         if (departureTime == null) return false;

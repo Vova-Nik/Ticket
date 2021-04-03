@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hillel.persistence.entity.enums.StationType;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
 import java.time.Instant;
@@ -35,24 +36,16 @@ public class StationEntity {
 
     public StationEntity(String name) {
         this.name = name;
-        longitude = 29D;
-        latitude = 51D;
-        description = "Just a Station";
+        longitude = 29.0D;
+        latitude = 50.5D;
+        description = "Just other Station on ones way";
         int delay = (int) (Math.random() * 1000000000);
         foundation = Instant.parse("1970-12-03T10:15:30.00Z").minusSeconds(delay * delay);
         stopType = StationType.LINEAR;
     }
 
-    //    static Instant	parse(CharSequence text)
     //    Obtains an instance of Instant from a text string such as 2007-12-03T10:15:30.00Z.
-    public boolean isValid() {
-        if (name == null) return false;
-        //to change
-        if (longitude == null) longitude = 30D;
-        if (latitude == null) latitude = 50D;
-        if (description == null || description.length() == 0) description = "Just a station on ones way";
-        if (foundation == null) foundation = Instant.now().minusSeconds(3153600000L);
-        if (stopType == null) stopType = StationType.LINEAR;
-        return true;
+    public boolean isValid(){
+         return !StringUtils.isEmpty(name) && longitude != null && latitude != null && description != null && foundation != null;
     }
 }

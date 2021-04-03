@@ -13,8 +13,7 @@ public class TrainRouteService {
 
     @Transactional
     public Long save(final TrainRoutesEntity entity){
-        if(entity==null||!entity.isValid(entity)) throw new IllegalArgumentException("TrainRouteService.create - TrainRoutesEntity is not valid");
-        Long id = trainRouteRepository.create(entity);
-        return id;
+        if(entity==null||!entity.isValid()) throw new IllegalArgumentException("TrainRouteService.create - TrainRoutesEntity is not valid");
+            return trainRouteRepository.create(entity);
     }
 }

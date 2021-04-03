@@ -1,5 +1,7 @@
 package org.hillel;
 
+import org.hillel.exceptions.OveralException;
+import org.hillel.persistence.entity.JourneyEntity;
 import org.hillel.persistence.entity.StationEntity;
 import org.hillel.persistence.entity.TrainRoutesEntity;
 import org.hillel.persistence.entity.VehicleEntity;
@@ -12,9 +14,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.sql.Time;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 @Component("TablesCreator")
 public class TablesCreator {
+//    Map<Long, StationEntity> stations = new HashMap<>();
+
     @Autowired
     StationService stationService;
 
@@ -22,45 +30,53 @@ public class TablesCreator {
 
         StationEntity ods = new StationEntity("Odessa");
         ods.setStopType(StationType.TRANSIT);
-        Long stopid = stationService.createStop(ods);
+        Long stopid = stationService.createStation(ods);
 
         StationEntity kyiv = new StationEntity("Kyiv");
         kyiv.setStopType(StationType.TRANSIT);
-        stationService.createStop(kyiv);
+        stationService.createStation(kyiv);
 
         StationEntity lviv = new StationEntity("Lviv");
         lviv.setStopType(StationType.TRANSIT);
-        stationService.createStop(lviv);
+        stationService.createStation(lviv);
 
         StationEntity dnepr = new StationEntity("Dnepr");
         dnepr.setStopType(StationType.TRANSIT);
-        stationService.createStop(dnepr);
+        stationService.createStation(dnepr);
 
-        stationService.createStop(new StationEntity("Gmerinka"));
-        stationService.createStop(new StationEntity("Vapnyarka"));
-        stationService.createStop(new StationEntity("Fastov"));
-        stationService.createStop(new StationEntity("Rozdilna"));
+        stationService.createStation(new StationEntity("Gmerinka"));
+        stationService.createStation(new StationEntity("Vapnyarka"));
+        stationService.createStation(new StationEntity("Fastov"));
+        stationService.createStation(new StationEntity("Rozdilna"));
         return true;
     }
 
     @Autowired
     TrainRouteService trainRouteService;
-    public void createRoutesPool(){
+    public void createRoutesPool() throws OveralException {
         StationEntity from = stationService.getByName("Odessa");
         StationEntity to = stationService.getByName("Kyiv");
         TrainRoutesEntity trainRoutesEntity =  new TrainRoutesEntity(10,from, to, new Time(20,0,0), new Time(9,0,0));
+        if(!trainRoutesEntity.isValid())throw new OveralException("createRoutesPool trainRoutesEntity is not valid");
         trainRouteService.save(trainRoutesEntity);
 
         StationEntity from2 = stationService.getByName("Kyiv");
         StationEntity to2 = stationService.getByName("Odessa");
         TrainRoutesEntity trainRoutesEntity2 =  new TrainRoutesEntity(9,from2, to2, new Time(19,6,0), new Time(6,30,0));
+        if(!trainRoutesEntity2.isValid())throw new OveralException("createRoutesPool trainRoutesEntity1 is not valid");
+        trainRouteService.save(trainRoutesEntity2);
+
+        StationEntity from3 = stationService.getByName("Lviv");
+        StationEntity to3 = stationService.getByName("Dnepr");
+        TrainRoutesEntity trainRoutesEntity3 =  new TrainRoutesEntity(38,from2, to2, new Time(19,6,0), new Time(6,30,0));
+        if(!trainRoutesEntity2.isValid())throw new OveralException("createRoutesPool trainRoutesEntity1 is not valid");
         trainRouteService.save(trainRoutesEntity2);
     }
 
     @Autowired
     VehicleService vehicleService;
 
-    public boolean createVehiclesPool() {
+    public void createVehiclesPool() {
 
         VehicleEntity trainVehicle = new VehicleEntity("Green train", VehicleType.TRAIN);
         vehicleService.save(trainVehicle);
@@ -72,9 +88,15 @@ public class TablesCreator {
         vehicleService.save(trainVehicle);
         trainVehicle = new VehicleEntity("Chernomoretc", VehicleType.TRAIN);
         vehicleService.save(trainVehicle);
-        return true;
 
     }
 
+
+    public void createJourneys() throws OveralException {
+        StationEntity odessa = stationService.getByName("Odessa");
+        StationEntity kyiv = stationService.getByName("Kyiv");
+        if(odessa==null||kyiv==null) throw new OveralException("Journey creation error");
+        JourneyEntity journeyEntity = new JourneyEntity(odessa,kyiv);
+    }
 
 }

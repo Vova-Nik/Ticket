@@ -30,16 +30,14 @@ public class JourneyEntity {
     @Column(name="arrival", nullable = false)
     Instant arrival;
 
-    @OneToOne
-//    @Column(name="vehicle", nullable = false)
+    @ManyToOne
     VehicleEntity vehicle;
 
     @Column(name="stations")
     @OneToMany
     List<StationEntity> stations;// = new ArrayList<>();
 
-
-    public void addStop(StationEntity station){
+    public void addStop(final StationEntity station){
         stations.add(station);
     }
 
@@ -59,7 +57,6 @@ public class JourneyEntity {
     public JourneyEntity(String stationFrom, String stationTo) {
         this.stationFrom = stationFrom;
         this.stationTo = stationTo;
-
         this.departure = Instant.now().plusSeconds(3600);
         this.arrival = Instant.now().plusSeconds(36000);
         stations = new ArrayList<>();
