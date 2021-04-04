@@ -1,21 +1,19 @@
 package org.hillel.persistence.repository;
 
-import org.hibernate.Transaction;
-import org.hillel.persistence.entity.TrainRoutesEntity;
+import org.hillel.persistence.entity.RouteEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
 import javax.persistence.PersistenceContext;
 
 @Repository
-public class TrainRouteRepository {
+public class RouteRepository {
     @PersistenceContext
     private EntityManager entityManager;
 
     @Transactional
-    public Long create(final TrainRoutesEntity entity) {
+    public Long create(final RouteEntity entity) {
         if (entity == null) {
             throw new IllegalArgumentException("StopEntity repository == null");
         }

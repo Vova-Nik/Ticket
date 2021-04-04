@@ -13,7 +13,6 @@ import java.util.Scanner;
 
 public class Starter {
     public static void main(String[] args) throws SQLException, OveralException {
-        //       final ApplicationContext applicationContext = new ClassPathXmlApplicationContext("common-beans.xml");
         final ConfigurableApplicationContext applicationContext = new AnnotationConfigApplicationContext(RootConfig.class);
         Environment env = applicationContext.getEnvironment();
 
@@ -24,12 +23,6 @@ public class Starter {
             tablesCreator.createRoutesPool();
             tablesCreator.createJourneys();
 
-//            StationService stationService = applicationContext.getBean("StopService", StationService.class);
-
-//            VehicleService vehicleService = applicationContext.getBean("VehicleService", VehicleService.class);
-//            vehicleService.createVehicleTestPool();
-
-
             TicketClient ticketClient = applicationContext.getBean(TicketClient.class);
 
             Scanner console = new Scanner(System.in);
@@ -39,8 +32,5 @@ public class Starter {
         } finally {
             applicationContext.close();
         }
-
-
     }
-
 }

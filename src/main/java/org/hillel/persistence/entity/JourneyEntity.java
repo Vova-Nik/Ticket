@@ -12,7 +12,7 @@ import java.util.List;
 @Entity
 @Data
 @NoArgsConstructor
-@Table(name = "journey")
+@Table(name = "journeys")
 public class JourneyEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,43 +33,27 @@ public class JourneyEntity {
     @ManyToOne
     VehicleEntity vehicle;
 
-    @Column(name="stations")
     @OneToMany
-    List<StationEntity> stations;// = new ArrayList<>();
+    List<StationEntity> stations;   // = new ArrayList<>();
 
     public void addStop(final StationEntity station){
         stations.add(station);
     }
 
-    public JourneyEntity(StationEntity stationFrom, StationEntity stationTo) {
+    public JourneyEntity(StationEntity stationFrom, StationEntity stationTo, VehicleEntity vehicle) {
         this.stationFrom = stationFrom.getName();
         this.stationTo = stationTo.getName();
         stations = new ArrayList<>();
         stations.add(stationFrom);
         stations.add(stationTo);
+        this.vehicle = vehicle;
         //subject to chane
         this.departure = Instant.now().plusSeconds(3600);
         this.arrival = Instant.now().plusSeconds(36000);
-        this.vehicle = new VehicleEntity();
-    }
 
-    //Just for testing constructor
-    public JourneyEntity(String stationFrom, String stationTo) {
-        this.stationFrom = stationFrom;
-        this.stationTo = stationTo;
-        this.departure = Instant.now().plusSeconds(3600);
-        this.arrival = Instant.now().plusSeconds(36000);
-        stations = new ArrayList<>();
-        stations.add(new StationEntity("AnyFrom"));
-        stations.add(new StationEntity("AnyTo"));
     }
 
     public boolean isValid() {
-      if(StringUtils.hasText(stationFrom) && StringUtils.hasText(stationTo) && departure!=null && arrival!=null)
-          return false;
-//      if(stops.size()<2)
-//          return false;
-      return true;
-
+        return StringUtils.hasText(stationFrom) && StringUtils.hasText(stationTo) && departure != null && arrival != null;
     }
 }

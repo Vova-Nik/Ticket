@@ -3,6 +3,7 @@ package org.hillel.persistence.entity;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hillel.persistence.entity.enums.StationType;
+import org.hillel.persistence.entity.enums.VehicleType;
 import org.hillel.persistence.repository.StationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -15,8 +16,8 @@ import java.util.List;
 @Entity
 @Data
 @NoArgsConstructor
-@Table(name = "train_routes")
-public class TrainRoutesEntity {
+@Table(name = "routes")
+public class RouteEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -37,18 +38,22 @@ public class TrainRoutesEntity {
     Time arrivalTime;
 
 
-    @Column(name = "stations")
-    @OneToMany
+    @Enumerated(EnumType.STRING)
+    private VehicleType type;
+
+    @ManyToMany
+//    @JoinColumn(name = "stations_id")
     List<StationEntity> stations;
 
 
-    public TrainRoutesEntity(Integer routeNumber,StationEntity from, StationEntity to, Time departure, Time arrival) {
+    public RouteEntity(Integer routeNumber, StationEntity from, StationEntity to, Time departure, Time arrival) {
         this.routeNumber = routeNumber;
         this.stationFrom = from.getName();
         this.stationTo = to.getName();
         this.departureTime = departure;
         this.arrivalTime = arrival;
         this.departurePeriod = "daily";
+        this.type = VehicleType.TRAIN;
         this.stations = new ArrayList<>();
         stations.add(from);
         stations.add(to);
@@ -66,6 +71,7 @@ public class TrainRoutesEntity {
         if (routeNumber == null) return false;
         if (stationFrom == null) return false;
         if (departureTime == null) return false;
+        if (type == null) return false;
         return true;
     }
 }
