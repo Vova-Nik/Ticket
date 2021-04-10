@@ -1,0 +1,33 @@
+/*
+Lesson 4
+44:25 - Enums in JPA
+57:30 - StopEntity creation
+1:21:50 - Abstract Class (@MappedSuperclass)
+1:26:40 - @CreationTimeStamp, boolean
+2:10:00 - @Embeddable/@Embedded
+2:15:00 - One-to-One relation
+ */
+/*
+Lesson 5
+34:40 - @ManyToOne many journey to one vehicle
+41:38 - каскадирование @ManyToOne (cascade={CascadeType.PERSIST})
+51:00 - @OneToMany
+1:09:00 - Entity Life Cycle
+1:16:00 - JourneyEntity Equals
+1:26:00 - Lazy/Eagar загрузка
+1:36:00 - findById example
+2:05:45 - ManyToMany
+2:47:00 - merge for updating
+3:03:00 - session of EntityManager
+ */
+/*
+Lesson 6
+0:22:00 - CommonRepository Abstract class
+0:25:10 - GenericRepository Interface
+1:00:00 - каскадирование
+1:24:00 - @OneToMany (cascade={CascadeType.PERSIST, CascadeType.MERGE})
+1:41:25 - @DynamicInsert
+1:51:00 - EntityManager.Contains() + detached -> managed
+1:56:40 - CreateOrUpdate for complex cases
+2:19:00 - removeById
+ */

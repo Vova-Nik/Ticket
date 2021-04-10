@@ -24,6 +24,7 @@ public class Starter {
             tablesCreator.createJourneys();
 
             TicketClient ticketClient = applicationContext.getBean(TicketClient.class);
+            tablesCreator.createClients();
 
             Scanner console = new Scanner(System.in);
             System.out.println("Check database tables if necessary, then input any string in console to finish process");

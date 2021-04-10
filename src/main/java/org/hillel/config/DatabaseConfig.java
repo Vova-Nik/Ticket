@@ -63,7 +63,7 @@ public class DatabaseConfig {
         jpaTransactionManager.setEntityManagerFactory(entityManagerFactory);
         jpaTransactionManager.setDataSource(dataSource());
 
-        jpaTransactionManager.setDefaultTimeout(5000);
+        jpaTransactionManager.setDefaultTimeout(50);
 
         return jpaTransactionManager;
     }

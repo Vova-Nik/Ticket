@@ -2,6 +2,7 @@ package org.hillel.service;
 
 
 import org.hillel.persistence.entity.JourneyEntity;
+import org.hillel.persistence.entity.RouteEntity;
 import org.hillel.persistence.repository.JourneyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -21,8 +22,13 @@ public class TransactionalJourneyService implements JourneyService{
     @Override
     public Long createJourney(final JourneyEntity entity){
        if(entity==null||!entity.isValid()) throw new IllegalArgumentException("JourneyEntity is not valid");
-        Long id = journeyRepository.create(entity);
-        return id;
+               return journeyRepository.createOrUpdate(entity).getId();
+     }
+
+    @Transactional
+    public JourneyEntity getById(final Long id){
+        if(id==null||id<0) throw new IllegalArgumentException("TransactionalJourneyService.create - JourneyService is not valid");
+        return journeyRepository.findById(id).orElseThrow(()->new IllegalArgumentException("TransactionalJourneyService.getById - unable to get data by id=" +id));
     }
 
     @Override

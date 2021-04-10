@@ -7,16 +7,12 @@ import org.springframework.util.StringUtils;
 import javax.persistence.*;
 import java.util.Arrays;
 
+//@AbstractEntity
 @Entity
 @Data
 @NoArgsConstructor
 @Table(name = "vehicles")
-public class VehicleEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @Column(name = "name", nullable = false)
-    String name;
+public class VehicleEntity extends AbstractEntity<Long>{
 
     @Column(name = "vehicle_type", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -32,7 +28,7 @@ public class VehicleEntity {
     private int comonCapacity;
 
     public VehicleEntity(String name, VehicleType type) {
-        this.name = name;
+        setName(name);
         vehicleType = type;
 
         switch (type) {
@@ -62,9 +58,9 @@ public class VehicleEntity {
                 break;
         }
     }
-
+    @Override
     public boolean isValid() {
-            if(StringUtils.isEmpty(name)) return false;
+            if(!super.isValid()) return false;
             return    Arrays.stream(VehicleType.values()).anyMatch((t) -> t.equals(vehicleType));
     }
 }

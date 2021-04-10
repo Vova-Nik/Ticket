@@ -1,59 +1,64 @@
 package org.hillel.persistence.entity;
 
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
+//@AbstractEntity
 @Entity
-@Data
+@DynamicUpdate
+@Getter
 @NoArgsConstructor
-@Table(name = "journeys")
-public class JourneyEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@Table(name = "journey")
+public class JourneyEntity extends AbstractEntity<Long>{
 
-    @Column(name = "station_from", nullable = false, columnDefinition = "varchar(64)")
-    private String stationFrom;
-
-    @Column(name = "station_to", nullable = false)
-    private String stationTo;
-
-    @Column(name="departure", nullable = false)
+    @Column(name = "departure", nullable = false)
     Instant departure;
 
-    @Column(name="arrival", nullable = false)
+    @Column(name = "arrival", nullable = false)
     Instant arrival;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    StationEntity stationFrom;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    StationEntity stationTo;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     VehicleEntity vehicle;
 
-    @OneToMany
-    List<StationEntity> stations;   // = new ArrayList<>();
+    @ManyToOne
+    RouteEntity route;
 
-    public void addStop(final StationEntity station){
-        stations.add(station);
-    }
-
-    public JourneyEntity(StationEntity stationFrom, StationEntity stationTo, VehicleEntity vehicle) {
-        this.stationFrom = stationFrom.getName();
-        this.stationTo = stationTo.getName();
-        stations = new ArrayList<>();
-        stations.add(stationFrom);
-        stations.add(stationTo);
+    public JourneyEntity(RouteEntity route, StationEntity stationFrom, StationEntity stationTo, VehicleEntity vehicle) {
+        this.setName(stationTo.getName() + "->" + stationFrom.getName());
+        this.stationFrom = stationFrom;
+        this.stationTo = stationTo;
         this.vehicle = vehicle;
-        //subject to chane
+        //subject to change
         this.departure = Instant.now().plusSeconds(3600);
         this.arrival = Instant.now().plusSeconds(36000);
-
+        this.route = route;
     }
 
+    @Override
     public boolean isValid() {
-        return StringUtils.hasText(stationFrom) && StringUtils.hasText(stationTo) && departure != null && arrival != null;
+        return stationFrom.isValid() && stationTo.isValid() && departure != null && arrival != null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof JourneyEntity)) return false;
+        JourneyEntity entity = (JourneyEntity) o;
+        return getId() != null && Objects.equals(getId(), entity.getId());
     }
 }

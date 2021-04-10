@@ -2,14 +2,11 @@ package org.hillel.persistence.entity;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hillel.persistence.entity.enums.StationType;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hillel.persistence.entity.enums.VehicleType;
-import org.hillel.persistence.repository.StationRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.*;
 import java.sql.Time;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,12 +14,8 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @Table(name = "routes")
-public class RouteEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @Column(name = "route_number", nullable = false)
-    Integer routeNumber;
+@DynamicUpdate
+public class RouteEntity extends AbstractEntity<Long>{
 
     @Column(name = "station_from", nullable = false)
     String stationFrom;
@@ -37,17 +30,18 @@ public class RouteEntity {
     @Column(name = "arrival_time", nullable = false)
     Time arrivalTime;
 
-
     @Enumerated(EnumType.STRING)
     private VehicleType type;
 
+//    @ManyToMany(cascade = {CascadeType.PERSIST})
     @ManyToMany
-//    @JoinColumn(name = "stations_id")
-    List<StationEntity> stations;
+    @JoinTable(name = "route_station",
+            joinColumns = @JoinColumn(name = "route_id"),
+            inverseJoinColumns=@JoinColumn(name="station_id"))
+    private List<StationEntity> stations;
 
-
-    public RouteEntity(Integer routeNumber, StationEntity from, StationEntity to, Time departure, Time arrival) {
-        this.routeNumber = routeNumber;
+    public RouteEntity(String routeNumber, StationEntity from, StationEntity to, Time departure, Time arrival) {
+        this.setName(routeNumber);
         this.stationFrom = from.getName();
         this.stationTo = to.getName();
         this.departureTime = departure;
@@ -59,16 +53,14 @@ public class RouteEntity {
         stations.add(to);
     }
 
-    public boolean addStation(final StationEntity station) {
-        if (station.isValid() && !stations.contains(station)) {
+    public void addStation(final StationEntity station) {
+        if (!station.isValid()) throw new IllegalArgumentException("RouteEntity.addStation station object is not valid");
             stations.add(station);
-            return true;
-        }
-        return false;
     }
 
+    @Override
     public boolean isValid() {
-        if (routeNumber == null) return false;
+        if (!super.isValid()) return false;
         if (stationFrom == null) return false;
         if (departureTime == null) return false;
         if (type == null) return false;

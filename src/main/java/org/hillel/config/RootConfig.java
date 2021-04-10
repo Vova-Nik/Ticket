@@ -1,7 +1,5 @@
 package org.hillel.config;
 
-import org.hillel.service.TicketClient;
-import org.hillel.service.TransactionalJourneyService;
 import org.springframework.context.annotation.*;
 
 @Configuration

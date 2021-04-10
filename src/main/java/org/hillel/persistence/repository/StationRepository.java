@@ -1,5 +1,6 @@
 package org.hillel.persistence.repository;
 
+import org.hillel.persistence.entity.ClientEntity;
 import org.hillel.persistence.entity.StationEntity;
 import org.springframework.stereotype.Repository;
 
@@ -8,19 +9,9 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 @Repository
-public class StationRepository {
-    @PersistenceContext
-    private EntityManager entityManager;
-
-    public long create(final StationEntity stationEntity) {
-        if (stationEntity == null) {
-            throw new IllegalArgumentException("StationRepository repository == null");
-        }
-        if (!stationEntity.isValid()) {
-            throw new IllegalArgumentException("StationRepository repository stopEntity is not valid");
-        }
-        entityManager.persist(stationEntity);
-        return stationEntity.getId();
+public class StationRepository extends ComonRepository<StationEntity, Long>{
+    protected StationRepository() {
+        super(StationEntity.class);
     }
 
     public StationEntity getByName(String name) {

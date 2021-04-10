@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service("TrainRouteService")
 public class RouteService {
     @Autowired
@@ -14,6 +16,12 @@ public class RouteService {
     @Transactional
     public Long save(final RouteEntity entity){
         if(entity==null||!entity.isValid()) throw new IllegalArgumentException("TrainRouteService.create - TrainRoutesEntity is not valid");
-            return routeRepository.create(entity);
+            return routeRepository.createOrUpdate(entity).getId();
+    }
+
+    @Transactional
+    public RouteEntity getById(final Long id){
+        if(id==null||id<0) throw new IllegalArgumentException("TrainRouteService.create - TrainRoutesEntity is not valid");
+        return routeRepository.findById(id).orElseThrow(()->new IllegalArgumentException("RouteService.getById - unable to get data by id=" +id));
     }
 }
