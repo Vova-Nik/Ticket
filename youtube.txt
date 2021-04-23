@@ -30,4 +30,5 @@ Lesson 6
 1:51:00 - EntityManager.Contains() + detached -> managed
 1:56:40 - CreateOrUpdate for complex cases
 2:19:00 - removeById
+2:35:16 - EntityManager..GetReference
  */

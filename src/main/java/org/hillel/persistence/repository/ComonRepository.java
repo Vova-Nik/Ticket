@@ -1,16 +1,11 @@
 package org.hillel.persistence.repository;
 
+import org.hillel.exceptions.UnableToRemove;
 import org.hillel.persistence.entity.AbstractEntity;
-import org.hillel.persistence.entity.StationEntity;
-
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 public abstract class ComonRepository<E extends AbstractEntity<ID>, ID extends Serializable> implements GenericRepository<E, ID> {
 
@@ -40,28 +35,45 @@ public abstract class ComonRepository<E extends AbstractEntity<ID>, ID extends S
         return Optional.ofNullable(entity);
     }
 
-//    @Override
-//    public List<E> findByName(String name) {
-//        List<E> entities = new ArrayList<>();
-//        String sql = "SELECT * FROM stations where name = ?";
-//        Query query = entityManager.createNativeQuery(sql, entityClass);
-//        query.setParameter(1, name);
-        //  StationEntity stationEntity = (StationEntity) query.getSingleResult();
-        //  entities =(ArrayList<E>) query.getResultList();
-//        return (ArrayList<E>)query.getResultList();
-//    }
-
     @Override
-    public void removeById(ID id) {
-        throw new UnsupportedOperationException("removeById not implemented yet");
+    public void removeById(ID id) throws UnableToRemove {
+        if (id == null)
+            throw new IllegalArgumentException("Repository.delete unsufficient entity");
+        entityManager.remove(entityManager.getReference(entityClass, id));
     }
 
     @Override
-    public void remove(E entity) {
-        throw new UnsupportedOperationException("removeById not implemented yet");
+    public void remove(E entity) throws UnableToRemove {
+        if (entity == null || entity.getId() == null)
+            throw new IllegalArgumentException("Repository.delete insufficient id");
+        if (entityManager.contains(entity)) {
+            entityManager.remove(entity);
+        }else {
+            removeById(entity.getId());
+        }
     }
 
+    @Override
+    public Collection<E> findByIds(ID... ids) {
+        List<E> list = new ArrayList<>();
+        for (ID id : ids
+        ) {
+            if (Objects.isNull(id)) throw new IllegalArgumentException("Not valid ID in repository findByIds");
+            list.add(findById(id).orElseThrow(() -> new IllegalArgumentException("Not valid ID in repository findByIds")));
+        }
+        return list;
+    }
 
+    @Override
+    public Collection<E> findAll() {
+        return null;
+    }
+
+    @Override
+    public boolean exists(ID id) {
+        Optional<E> entity = findById(id);
+        return entity.isPresent();
+    }
 }
 
 

@@ -12,10 +12,14 @@ public class VehicleRepository extends ComonRepository<VehicleEntity, Long> {
     }
 
     public Optional<VehicleEntity> getByName(String name) {
-        String sql = "SELECT * FROM vehicles where name = ?";
+        String sql = "SELECT * FROM vehicle where name = ?";
         Query query = entityManager.createNativeQuery(sql, VehicleEntity.class);
         query.setParameter(1, name);
         VehicleEntity vehicleEntity = (VehicleEntity) query.getSingleResult();
         return Optional.ofNullable(vehicleEntity);
+    }
+
+    public void merge(VehicleEntity entity){
+        entityManager.merge(entity);
     }
 }

@@ -14,7 +14,7 @@ public class RootConfig {
 
 //    @Bean("TicketClient")
 //    public TicketClient getTicketClient(){
-////        return new TicketClient(getTransactionalJourneyService());
+//////        return new TicketClient(getTransactionalJourneyService());
 //        return new TicketClient();
 //    }
 

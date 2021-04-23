@@ -6,8 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 @Service("ClientService")
 public class ClientService {
     @Autowired
@@ -17,9 +15,4 @@ public class ClientService {
     public ClientEntity save(ClientEntity client){
         return clientRepository.createOrUpdate(client);
     }
-
-//    @Transactional
-//    public List<ClientEntity> getByName(String name){
-//        return clientRepository.findByName("John");
-//    }
 }

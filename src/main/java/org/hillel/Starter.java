@@ -1,20 +1,20 @@
 package org.hillel;
 
 import org.hillel.config.RootConfig;
-import org.hillel.exceptions.OveralException;
-import org.hillel.service.StationService;
-import org.hillel.service.TicketClient;
+import org.hillel.service.*;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.env.Environment;
-
 import java.sql.SQLException;
 import java.util.Scanner;
 
 public class Starter {
-    public static void main(String[] args) throws SQLException, OveralException {
+    public static void main(String[] args) throws SQLException{
         final ConfigurableApplicationContext applicationContext = new AnnotationConfigApplicationContext(RootConfig.class);
         Environment env = applicationContext.getEnvironment();
+
+        VehicleService vehicleService;
+        vehicleService = applicationContext.getBean(VehicleService.class);
 
         try {
             TablesCreator tablesCreator = applicationContext.getBean("TablesCreator", TablesCreator.class);
@@ -22,7 +22,6 @@ public class Starter {
             tablesCreator.createVehiclesPool();
             tablesCreator.createRoutesPool();
             tablesCreator.createJourneys();
-
             TicketClient ticketClient = applicationContext.getBean(TicketClient.class);
             tablesCreator.createClients();
 

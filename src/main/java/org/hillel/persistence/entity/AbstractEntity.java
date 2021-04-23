@@ -2,6 +2,7 @@ package org.hillel.persistence.entity;
 
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.util.StringUtils;
@@ -13,6 +14,7 @@ import java.time.Instant;
 @Getter
 @Setter
 @MappedSuperclass
+
 public abstract class AbstractEntity<ID extends Serializable> {
 
     @Id
@@ -25,6 +27,9 @@ public abstract class AbstractEntity<ID extends Serializable> {
     @Column(name="creation_date")
     @CreationTimestamp
     private Instant creationDate;
+
+    public AbstractEntity(){
+    }
 
     public boolean isValid() {
         return StringUtils.hasText(name);

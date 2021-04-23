@@ -1,6 +1,7 @@
 package org.hillel.persistence.entity;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
@@ -9,7 +10,7 @@ import java.util.Objects;
 @Entity
 @Table(name = "client")
 @Getter
-
+@NoArgsConstructor
 public class ClientEntity extends AbstractEntity<Long> {
 
     @Column(name = "surname")
@@ -26,10 +27,10 @@ public class ClientEntity extends AbstractEntity<Long> {
         pwd = "qwerty";
     }
 
-    public ClientEntity() {
+    public ClientEntity(String name) {
         int num = (int) (Math.random() * 1000);
-        setName("Name");
-        surname = "Surname" + num;
+        setName(name);
+        surname = name + "son";
         email = surname + "@.mail";
         pwd = "qwerty" + num;
     }
