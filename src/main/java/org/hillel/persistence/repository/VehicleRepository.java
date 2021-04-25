@@ -3,6 +3,7 @@ package org.hillel.persistence.repository;
 import org.hillel.persistence.entity.VehicleEntity;
 import org.springframework.stereotype.Repository;
 import javax.persistence.Query;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -21,5 +22,14 @@ public class VehicleRepository extends ComonRepository<VehicleEntity, Long> {
 
     public void merge(VehicleEntity entity){
         entityManager.merge(entity);
+    }
+
+    public Optional<List<VehicleEntity>> findAllByNamedQuery(){
+        return Optional.ofNullable(entityManager.createNamedQuery("findAll", VehicleEntity.class).getResultList());
+    }
+
+    public Optional<List<?>> findAllByStoredProc(){
+        List<?> vehicles = entityManager.createNamedStoredProcedureQuery("findAllVehicles").getResultList();
+        return Optional.ofNullable(vehicles);
     }
 }

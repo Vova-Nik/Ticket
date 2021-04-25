@@ -6,8 +6,12 @@ import org.hillel.persistence.repository.VehicleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.Objects;
-import java.util.Optional;
+
+import javax.persistence.Table;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import java.util.*;
 
 @Service("VehicleService")
 public class VehicleService {
@@ -22,7 +26,7 @@ public class VehicleService {
         return vehicleRepository.createOrUpdate(entity).getId();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Optional<VehicleEntity> getByName(final String name) {
         if (name == null) throw new IllegalArgumentException("VehicleService.getByName");
         return (vehicleRepository.getByName(name));
@@ -42,8 +46,33 @@ public class VehicleService {
         }
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public boolean exists(final Long id){
         return vehicleRepository.exists(id);
+    }
+
+    @Transactional
+    public List<VehicleEntity> findAllByNamedQuery(){
+        return vehicleRepository.findAllByNamedQuery().orElse(new ArrayList<>());
+    }
+
+    @Transactional(readOnly = true)
+    public Collection<VehicleEntity> findAll() {
+        return vehicleRepository.findAll().orElse(new ArrayList<>());
+    }
+
+    @Transactional(readOnly = true)
+    public Collection<VehicleEntity> findAllSQL() {
+       return vehicleRepository.findAllSQL().orElse(new ArrayList<>());
+    }
+
+    @Transactional(readOnly = true)
+    public Collection<VehicleEntity> findAllCriteria() {
+        return vehicleRepository.findAllCriteria().orElse(new ArrayList<>());
+    }
+
+    @Transactional(readOnly = true)
+    public Collection<VehicleEntity> storedProcExecute() {
+        return vehicleRepository.storedProcExecute().orElse(new ArrayList<>());
     }
 }

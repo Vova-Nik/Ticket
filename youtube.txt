@@ -32,3 +32,18 @@ Lesson 6
 2:19:00 - removeById
 2:35:16 - EntityManager..GetReference
  */
+
+ /*
+ Lesson 7
+0:30:10 Оценка затратности запроса SQL. SQL Plan in Idea
+0:40:00 findByIds, findAll (unwrap(Session.class))
+1:05:00 @Transactional(readOnly=true)
+1:09:00 findAll()
+1:09:10 EntityManager.createQuery JPQL vs HQL
+1:24:00 findAll HQL
+1:29:00 findAll SQL
+1:35:40 Criteria
+2:06:00 @NamedQueries()
+2:14:50 @NamedStoredProcedureQueries()
+2:41:50 @NamedStoredProcedureQuery with parameters
+  */

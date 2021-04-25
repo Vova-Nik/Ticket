@@ -15,6 +15,19 @@ import java.util.Objects;
 @Setter
 @NoArgsConstructor
 @Table(name = "vehicles")
+@NamedQueries(value = {
+        @NamedQuery(name = "findAll", query = "SELECT v FROM VehicleEntity v")
+})
+
+/*@NamedStoredProcedureQueries(
+        @NamedStoredProcedureQuery(
+                name="findAllVehicles",
+                procedureName = "find_all_vehicles",
+                parameters = @StoredProcedureParameter(mode=ParameterMode.REF_CURSOR, type = Class.class),
+                resultClasses = VehicleEntity.class
+        )
+)*/
+
 public class VehicleEntity extends AbstractEntity<Long> {
 
     @Column(name = "vehicle_type", nullable = false)
@@ -32,8 +45,8 @@ public class VehicleEntity extends AbstractEntity<Long> {
     @OneToMany(mappedBy = "vehicleEntity", orphanRemoval = true)
     private List<JourneyEntity> journeys = new ArrayList<>();
 
-    public void addJourney(final JourneyEntity journey){
-        if(Objects.isNull(journey)||!journey.isValid())
+    public void addJourney(final JourneyEntity journey) {
+        if (Objects.isNull(journey) || !journey.isValid())
             return;
         journeys.add(journey);
     }

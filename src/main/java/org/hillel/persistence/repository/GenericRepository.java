@@ -13,11 +13,18 @@ public interface GenericRepository<E, ID> {
 
     void removeById(ID id) throws UnableToRemove;
 
-     void remove(E entity) throws UnableToRemove;
+    void remove(E entity) throws UnableToRemove;
 
-    Collection<E> findByIds(ID ... ids);
+    Collection<E> findByIds(ID... ids);
 
-    Collection<E> findAll();
+    Optional<Collection<E>> findAll();
 
-     boolean exists(ID id);
+    Optional<Collection<E>> findAllSQL();
+
+    Optional<Collection<E>> findAllCriteria();
+
+    Optional<Collection<E>> storedProcExecute();
+
+    boolean exists(ID id);
+
 }
