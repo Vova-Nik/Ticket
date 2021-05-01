@@ -2,15 +2,11 @@ package org.hillel.service;
 
 import org.hillel.exceptions.UnableToRemove;
 import org.hillel.persistence.entity.VehicleEntity;
+import org.hillel.persistence.entity.VehicleEntity_;
 import org.hillel.persistence.repository.VehicleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.persistence.Table;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 import java.util.*;
 
 @Service("VehicleService")
@@ -74,5 +70,22 @@ public class VehicleService {
     @Transactional(readOnly = true)
     public Collection<VehicleEntity> storedProcExecute() {
         return vehicleRepository.storedProcExecute().orElse(new ArrayList<>());
+    }
+
+    @Transactional(readOnly = true)
+    public List<VehicleEntity> getSortedByPage(int pageSize, int first, String sortBy){
+        if (!checkSortingCriteria(sortBy))
+            throw new IllegalArgumentException("VehicleService.getSorted insufficient sortBy parameter");
+        return vehicleRepository.getSortedByPage(pageSize, first, sortBy, true).orElseGet(ArrayList::new);
+    }
+
+    @Transactional(readOnly = true)
+    public List<VehicleEntity> getSorted(String sortBy){
+        if (!checkSortingCriteria(sortBy))
+            throw new IllegalArgumentException("VehicleService.getSorted insufficient sortBy parameter");
+        return vehicleRepository.getSorted(sortBy, true).orElseGet(ArrayList::new);
+    }
+    boolean checkSortingCriteria(String sortBy) {
+        return (sortBy.equals(VehicleEntity_.ID) || sortBy.equals(VehicleEntity_.NAME) || sortBy.equals(VehicleEntity_.ACTIVE) || sortBy.equals(VehicleEntity_.CREATION_DATE));
     }
 }

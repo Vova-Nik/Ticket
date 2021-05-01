@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import java.sql.Time;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,7 +62,7 @@ public class TablesCreator {
     public void createRoutesPool(){
         StationEntity from = stationService.getByName("Odessa");
         StationEntity to = stationService.getByName("Kyiv");
-        RouteEntity routeEntity = new RouteEntity("10", from, to, new Time(20, 0, 0), new Time(9, 0, 0));
+        RouteEntity routeEntity = new RouteEntity("10", from, to, new Time(20, 0, 0), 30000);
         StationEntity gm = stationService.getByName("Gmerinka");
         routeEntity.addStation(gm);
         if (!routeEntity.isValid()) throw new IllegalArgumentException("createRoutesPool trainRoutesEntity is not valid");
@@ -69,13 +70,13 @@ public class TablesCreator {
 
         StationEntity from2 = stationService.getByName("Kyiv");
         StationEntity to2 = stationService.getByName("Odessa");
-        RouteEntity routeEntity2 = new RouteEntity("9", from2, to2, new Time(19, 6, 0), new Time(6, 30, 0));
+        RouteEntity routeEntity2 = new RouteEntity("9", from2, to2, new Time(19, 6, 0), 29000);
         if (!routeEntity2.isValid()) throw new IllegalArgumentException("createRoutesPool trainRoutesEntity1 is not valid");
         routeId2 = routeService.save(routeEntity2);
 
         StationEntity from3 = stationService.getByName("Lviv");
         StationEntity to3 = stationService.getByName("Dnepr");
-        RouteEntity routeEntity3 = new RouteEntity("38", from3, to3, new Time(19, 6, 0), new Time(6, 30, 0));
+        RouteEntity routeEntity3 = new RouteEntity("38", from3, to3, new Time(19, 6, 0),40000);
         if (!routeEntity3.isValid()) throw new IllegalArgumentException("createRoutesPool trainRoutesEntity1 is not valid");
         routeId3 = routeService.save(routeEntity3);
     }
@@ -106,27 +107,27 @@ public class TablesCreator {
         StationEntity kyiv = stationService.getByName("Kyiv");
         if (odessa == null || kyiv == null) throw new IllegalArgumentException("Journey creation error");
         RouteEntity route1 = routeService.getById(routeId1);
-        JourneyEntity journeyEntity0 = new JourneyEntity(route1, odessa, kyiv);
+        JourneyEntity journeyEntity0 = new JourneyEntity(route1, odessa, kyiv, LocalDate.now());
         transactionalJourneyService.createJourney(journeyEntity0);
-        transactionalJourneyService.setVehicle(journeyEntity0,vehicles.get(0));
+//        transactionalJourneyService.setVehicle(journeyEntity0,vehicles.get(0));
 
         RouteEntity route2 = routeService.getById(routeId2);
-        JourneyEntity journeyEntity1 = new JourneyEntity(route2, kyiv, odessa);
+        JourneyEntity journeyEntity1 = new JourneyEntity(route2, kyiv, odessa, LocalDate.now());
         transactionalJourneyService.createJourney(journeyEntity1);
-        transactionalJourneyService.setVehicle(journeyEntity1,vehicles.get(0));
+//        transactionalJourneyService.setVehicle(journeyEntity1,vehicles.get(0));
 
         StationEntity lviv = stationService.getByName("Lviv");
         StationEntity dnepr = stationService.getByName("Dnepr");
         if (lviv == null || dnepr == null) throw new IllegalArgumentException("Journey creation error");
 
         RouteEntity route3 = routeService.getById(routeId3);
-        JourneyEntity journeyEntity2 = new JourneyEntity(route3, dnepr, lviv);
+        JourneyEntity journeyEntity2 = new JourneyEntity(route3, dnepr, lviv, LocalDate.now());
         transactionalJourneyService.createJourney(journeyEntity2);
-        transactionalJourneyService.setVehicle(journeyEntity2,vehicles.get(1));
+//        transactionalJourneyService.setVehicle(journeyEntity2,vehicles.get(1));
 
-        JourneyEntity journeyEntity3 = new JourneyEntity(route3, lviv, dnepr);
+        JourneyEntity journeyEntity3 = new JourneyEntity(route3, lviv, dnepr, LocalDate.now());
         transactionalJourneyService.createJourney(journeyEntity3);
-        transactionalJourneyService.setVehicle(journeyEntity3,vehicles.get(1));
+//        transactionalJourneyService.setVehicle(journeyEntity3,vehicles.get(1));
 
         journeys.add(journeyEntity0);
         journeys.add(journeyEntity1);

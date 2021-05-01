@@ -1,10 +1,8 @@
 package org.hillel.service;
 
 import org.hillel.config.RootConfig;
-import org.hillel.persistence.entity.JourneyEntity;
-import org.hillel.persistence.entity.RouteEntity;
-import org.hillel.persistence.entity.StationEntity;
-import org.hillel.persistence.entity.VehicleEntity;
+import org.hillel.exceptions.UnableToRemove;
+import org.hillel.persistence.entity.*;
 import org.hillel.persistence.entity.enums.StationType;
 import org.hillel.persistence.entity.enums.VehicleType;
 import org.junit.jupiter.api.AfterAll;
@@ -26,12 +24,8 @@ class VehicleServiceTest {
 
     static ConfigurableApplicationContext applicationContext;
     static Environment env;
-
     static StationService stationService;
     static VehicleService vehicleService;
-    static VehicleEntity vehicle1;
-    static VehicleEntity vehicle2;
-    static VehicleEntity vehicle3;
 
     @BeforeAll
     public static void setUp() {
@@ -39,17 +33,6 @@ class VehicleServiceTest {
         Environment env = applicationContext.getEnvironment();
         vehicleService = applicationContext.getBean(VehicleService.class);
         stationService = applicationContext.getBean(org.hillel.service.StationService.class);
-
-        vehicle1 = new VehicleEntity("Chernomoretc", VehicleType.TRAIN);
-        vehicleService.save(vehicle1);
-        vehicle2 = new VehicleEntity("Green train", VehicleType.TRAIN);
-        vehicleService.save(vehicle2);
-        vehicle3 = new VehicleEntity("Test bus", VehicleType.BUS);
-        vehicleService.save(vehicle3);
-
-        assertTrue(vehicleService.exists(vehicle1.getId()));
-        assertTrue(vehicleService.exists(vehicle2.getId()));
-        assertTrue(vehicleService.exists(vehicle3.getId()));
     }
 
     @Test
@@ -58,41 +41,189 @@ class VehicleServiceTest {
 
     @Test
     void getAllByNamedQuery() {
+
+        VehicleEntity vehicle1 = new VehicleEntity("Chernomoretc", VehicleType.TRAIN);
+        vehicleService.save(vehicle1);
+        VehicleEntity vehicle2 = new VehicleEntity("Green train", VehicleType.TRAIN);
+        vehicleService.save(vehicle2);
+        VehicleEntity vehicle3 = new VehicleEntity("Test bus", VehicleType.BUS);
+        vehicleService.save(vehicle3);
+        assertTrue(vehicleService.exists(vehicle1.getId()));
+        assertTrue(vehicleService.exists(vehicle2.getId()));
+        assertTrue(vehicleService.exists(vehicle3.getId()));
+
         List<VehicleEntity> vehicles;
         vehicles = vehicleService.findAllByNamedQuery();
-        assertTrue(vehicles.size()>0);
+        assertTrue(vehicles.size() > 0);
+
+        try {
+            vehicleService.deleteById(vehicle1.getId());
+            vehicleService.deleteById(vehicle2.getId());
+            vehicleService.deleteById(vehicle3.getId());
+        } catch (UnableToRemove unableToRemove) {
+            unableToRemove.printStackTrace();
+            fail();
+        }
+
+
     }
 
     @Test
     void findAll() {
+        VehicleEntity vehicle1 = new VehicleEntity("Chernomoretc", VehicleType.TRAIN);
+        vehicleService.save(vehicle1);
+        VehicleEntity vehicle2 = new VehicleEntity("Green train", VehicleType.TRAIN);
+        vehicleService.save(vehicle2);
+        VehicleEntity vehicle3 = new VehicleEntity("Test bus", VehicleType.BUS);
+        vehicleService.save(vehicle3);
+        assertTrue(vehicleService.exists(vehicle1.getId()));
+        assertTrue(vehicleService.exists(vehicle2.getId()));
+        assertTrue(vehicleService.exists(vehicle3.getId()));
+
         Collection<VehicleEntity> vehicles;
         vehicles = vehicleService.findAll();
-        assertTrue(vehicles.size()>0);
+        assertTrue(vehicles.size() > 0);
     }
-
 
     @Test
     public void findAllSQL() {
+        VehicleEntity vehicle1 = new VehicleEntity("Chernomoretc", VehicleType.TRAIN);
+        vehicleService.save(vehicle1);
+        VehicleEntity vehicle2 = new VehicleEntity("Green train", VehicleType.TRAIN);
+        vehicleService.save(vehicle2);
+        VehicleEntity vehicle3 = new VehicleEntity("Test bus", VehicleType.BUS);
+        vehicleService.save(vehicle3);
+        assertTrue(vehicleService.exists(vehicle1.getId()));
+        assertTrue(vehicleService.exists(vehicle2.getId()));
+        assertTrue(vehicleService.exists(vehicle3.getId()));
+
         Collection<VehicleEntity> vehicles;
         vehicles = vehicleService.findAllSQL();
-        assertTrue(vehicles.size()>0);
+        assertTrue(vehicles.size() > 0);
     }
 
     @Test
     public void findAllCriteria() {
+        VehicleEntity vehicle1 = new VehicleEntity("Chernomoretc", VehicleType.TRAIN);
+        vehicleService.save(vehicle1);
+        VehicleEntity vehicle2 = new VehicleEntity("Green train", VehicleType.TRAIN);
+        vehicleService.save(vehicle2);
+        VehicleEntity vehicle3 = new VehicleEntity("Test bus", VehicleType.BUS);
+        vehicleService.save(vehicle3);
+        assertTrue(vehicleService.exists(vehicle1.getId()));
+        assertTrue(vehicleService.exists(vehicle2.getId()));
+        assertTrue(vehicleService.exists(vehicle3.getId()));
+
         Collection<VehicleEntity> vehicles;
         vehicles = vehicleService.findAllCriteria();
-        assertTrue(vehicles.size()>0);
+        assertTrue(vehicles.size() > 0);
     }
 
     @Test
     public void storedProcExecute() {
+        VehicleEntity vehicle1 = new VehicleEntity("Chernomoretc", VehicleType.TRAIN);
+        vehicleService.save(vehicle1);
+        VehicleEntity vehicle2 = new VehicleEntity("Green train", VehicleType.TRAIN);
+        vehicleService.save(vehicle2);
+        VehicleEntity vehicle3 = new VehicleEntity("Test bus", VehicleType.BUS);
+        vehicleService.save(vehicle3);
+        assertTrue(vehicleService.exists(vehicle1.getId()));
+        assertTrue(vehicleService.exists(vehicle2.getId()));
+        assertTrue(vehicleService.exists(vehicle3.getId()));
+
         VehicleEntity vehicle128 = new VehicleEntity("Bus 128", VehicleType.BUS);
         vehicleService.save(vehicle128);
-
         Collection<VehicleEntity> vehicles;
         vehicles = vehicleService.storedProcExecute();
         assertEquals(4, vehicles.size());
+    }
+
+    @Test
+    void getSorted() {
+        VehicleEntity vehicle1 = new VehicleEntity("Chernomoretc", VehicleType.TRAIN);
+        vehicleService.save(vehicle1);
+        VehicleEntity vehicle2 = new VehicleEntity("Green train", VehicleType.TRAIN);
+        vehicleService.save(vehicle2);
+        VehicleEntity vehicle3 = new VehicleEntity("Test bus", VehicleType.BUS);
+        vehicleService.save(vehicle3);
+        assertTrue(vehicleService.exists(vehicle1.getId()));
+        assertTrue(vehicleService.exists(vehicle2.getId()));
+        assertTrue(vehicleService.exists(vehicle3.getId()));
+
+        VehicleEntity veh;
+        for (int i = 0; i < 12; i++) {
+            int prefix = (int) (Math.random() * 100);
+            veh = new VehicleEntity("Vehicle" + prefix + '_' + i, VehicleType.TRAIN);
+            vehicleService.save(veh);
+        }
+
+        List<VehicleEntity> vehicles = vehicleService.getSorted(VehicleEntity_.NAME);
+        assertTrue(vehicles.size() > 8);
+        int aa = vehicles.get(0).getName().compareTo(vehicles.get(8).getName());
+        assertTrue(aa < 0);
+
+        print(vehicles);
+        vehicles = vehicleService.getSorted(StationEntity_.ID);
+        assertTrue(vehicles.size() > 8);
+        assertTrue(vehicles.get(0).getId() < vehicles.get(7).getId());
+        print(vehicles);
+
+        try {
+            for (VehicleEntity vehicle : vehicles
+            ) {
+                vehicleService.deleteById(vehicle.getId());
+            }
+        } catch (UnableToRemove unableToRemove) {
+            unableToRemove.printStackTrace();
+            fail();
+        }
+    }
+
+    @Test
+    void getSortedByPage() {
+        VehicleEntity vehicle1 = new VehicleEntity("Chernomoretc", VehicleType.TRAIN);
+        vehicleService.save(vehicle1);
+        VehicleEntity vehicle2 = new VehicleEntity("Green train", VehicleType.TRAIN);
+        vehicleService.save(vehicle2);
+        VehicleEntity vehicle3 = new VehicleEntity("Test bus", VehicleType.BUS);
+        vehicleService.save(vehicle3);
+        assertTrue(vehicleService.exists(vehicle1.getId()));
+        assertTrue(vehicleService.exists(vehicle2.getId()));
+        assertTrue(vehicleService.exists(vehicle3.getId()));
+
+        VehicleEntity veh;
+        for (int i = 0; i < 12; i++) {
+            int prefix = (int) (Math.random() * 100);
+            veh = new VehicleEntity("Vehicle" + prefix + '_' + i, VehicleType.TRAIN);
+            vehicleService.save(veh);
+        }
+
+        List<VehicleEntity> vehicles = vehicleService.getSortedByPage(5, 1, VehicleEntity_.NAME);
+        assertEquals(5, vehicles.size());
+        assertEquals("Green train", vehicles.get(0).getName());
+        print(vehicles);
+
+        vehicles = vehicleService.getSortedByPage(32, 0, VehicleEntity_.NAME);
+        assertEquals(15, vehicles.size());
+
+        try {
+            for (VehicleEntity vehicle : vehicles
+            ) {
+                vehicleService.deleteById(vehicle.getId());
+            }
+        } catch (UnableToRemove unableToRemove) {
+            unableToRemove.printStackTrace();
+            fail();
+        }
+    }
+
+    void print(List<VehicleEntity> vehicles) {
+        System.out.println("------------------------------------------------------------");
+        for (VehicleEntity vehicle : vehicles
+        ) {
+            System.out.println(vehicles);
+        }
+        System.out.println("------------------------------------------------------------");
     }
 
     @AfterAll

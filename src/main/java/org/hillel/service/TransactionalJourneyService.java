@@ -2,21 +2,14 @@ package org.hillel.service;
 
 
 import org.hillel.exceptions.UnableToRemove;
-import org.hillel.persistence.entity.JourneyEntity;
-import org.hillel.persistence.entity.RouteEntity;
-import org.hillel.persistence.entity.VehicleEntity;
+import org.hillel.persistence.entity.*;
 import org.hillel.persistence.repository.JourneyRepository;
-import org.hillel.persistence.repository.VehicleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service(value = "transactionalJourneyService")
 public class TransactionalJourneyService implements JourneyService {
@@ -43,7 +36,6 @@ public class TransactionalJourneyService implements JourneyService {
         final Optional<JourneyEntity> byId = journeyRepository.findById(id);
         if (withDependences && byId.isPresent()) {
             final JourneyEntity journeyEntity = byId.get();
-            journeyEntity.getVehicleEntity().getName();
             journeyEntity.getStationFrom().getName();
             journeyEntity.getStationTo().getName();
         }
@@ -56,20 +48,12 @@ public class TransactionalJourneyService implements JourneyService {
     }
 
     @Transactional
-    @Override
-    public void setVehicle(final JourneyEntity journey, final VehicleEntity vehicleEntity) {
-        if (Objects.isNull(journey) || !journey.isValid() || Objects.isNull(vehicleEntity) || !vehicleEntity.isValid())
-            throw new IllegalArgumentException("TransactionalJourneyService setVehicle error");
-        journey.setVehicle(vehicleEntity);
-        journeyRepository.createOrUpdate(journey);
-    }
-
-    @Transactional
     public void deleteById(final Long id) throws UnableToRemove {
         if (Objects.nonNull(id)) {
             journeyRepository.removeById(id);
         }
     }
+
 
     @Transactional
     public void delete(final JourneyEntity entity) throws UnableToRemove {
@@ -81,6 +65,25 @@ public class TransactionalJourneyService implements JourneyService {
     @Transactional
     public boolean exists(final Long id){
         return journeyRepository.exists(id);
+    }
+
+
+    @Transactional(readOnly = true)
+    public List<JourneyEntity> getSortedByPage(int pageSize, int first, String sortBy){
+        if (!checkSortingCriteria(sortBy))
+            throw new IllegalArgumentException("transactionalJourneyService.getSorted insufficient sortBy parameter");
+        return journeyRepository.getSortedByPage(pageSize, first, sortBy, true).orElseGet(ArrayList::new);
+    }
+
+    @Transactional(readOnly = true)
+    public List<JourneyEntity> getSorted(String sortBy){
+        if (!checkSortingCriteria(sortBy))
+            throw new IllegalArgumentException("transactionalJourneyService.getSorted insufficient sortBy parameter");
+        return journeyRepository.getSorted(sortBy, true).orElseGet(ArrayList::new);
+    }
+
+    boolean checkSortingCriteria(String sortBy) {
+        return (sortBy.equals(JourneyEntity_.ID) || sortBy.equals(JourneyEntity_.NAME) || sortBy.equals(JourneyEntity_.ACTIVE) || sortBy.equals(JourneyEntity_.CREATION_DATE));
     }
 
 }

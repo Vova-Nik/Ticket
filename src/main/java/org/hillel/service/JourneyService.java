@@ -10,6 +10,7 @@ import org.springframework.util.StringUtils;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 public interface JourneyService {
@@ -17,12 +18,13 @@ public interface JourneyService {
 
     Long createJourney(JourneyEntity journeyEntity);
 
-    void setVehicle(JourneyEntity journey, VehicleEntity vehicleEntity);
-
     void deleteById(Long id) throws UnableToRemove;
 
     void delete(JourneyEntity entity) throws UnableToRemove;
 
     boolean exists(Long id);
 
+    List<JourneyEntity> getSortedByPage(int pageSize, int first, String sortBy);
+
+    public List<JourneyEntity> getSorted(String sortBy);
 }

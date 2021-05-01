@@ -3,6 +3,7 @@ package org.hillel.persistence.entity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.hillel.persistence.entity.enums.VehicleType;
 
 import javax.persistence.*;
@@ -19,17 +20,11 @@ import java.util.Objects;
         @NamedQuery(name = "findAll", query = "SELECT v FROM VehicleEntity v")
 })
 
-/*@NamedStoredProcedureQueries(
-        @NamedStoredProcedureQuery(
-                name="findAllVehicles",
-                procedureName = "find_all_vehicles",
-                parameters = @StoredProcedureParameter(mode=ParameterMode.REF_CURSOR, type = Class.class),
-                resultClasses = VehicleEntity.class
-        )
-)*/
 
 public class VehicleEntity extends AbstractEntity<Long> {
 
+    @Column(name="name")
+    private String name;
     @Column(name = "vehicle_type", nullable = false)
     @Enumerated(EnumType.STRING)
     private VehicleType vehicleType;
@@ -42,17 +37,8 @@ public class VehicleEntity extends AbstractEntity<Long> {
     @Column(name = "comon_capacity", nullable = false)
     private int comonCapacity;
 
-    @OneToMany(mappedBy = "vehicleEntity", orphanRemoval = true)
-    private List<JourneyEntity> journeys = new ArrayList<>();
-
-    public void addJourney(final JourneyEntity journey) {
-        if (Objects.isNull(journey) || !journey.isValid())
-            return;
-        journeys.add(journey);
-    }
-
     public VehicleEntity(final String name, final VehicleType type) {
-        super.setName(name);
+        this.name = name;
         vehicleType = type;
 
         switch (type) {
@@ -94,5 +80,18 @@ public class VehicleEntity extends AbstractEntity<Long> {
     @Override
     public int hashCode() {
         return Objects.hash(getId());
+    }
+
+    @Override
+    public String toString() {
+        return "VehicleEntity{" +
+                "name='" + name + '\'' +
+                ", vehicleType=" + vehicleType +
+                ", overalCapacity=" + overalCapacity +
+                ", economCapacity=" + economCapacity +
+                ", businesCapacity=" + businesCapacity +
+                ", comonCapacity=" + comonCapacity +
+                ", active=" + active +
+                '}';
     }
 }

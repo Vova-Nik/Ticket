@@ -1,16 +1,12 @@
 package org.hillel.persistence.repository;
 
 import org.hibernate.Session;
+import org.hibernate.query.criteria.internal.OrderImpl;
 import org.hillel.exceptions.UnableToRemove;
 import org.hillel.persistence.entity.AbstractEntity;
-
-import javax.persistence.EntityManager;
-import javax.persistence.ParameterMode;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Table;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
+import org.springframework.util.StringUtils;
+import javax.persistence.*;
+import javax.persistence.criteria.*;
 import java.io.Serializable;
 import java.util.*;
 
@@ -74,13 +70,13 @@ public abstract class ComonRepository<E extends AbstractEntity<ID>, ID extends S
         return entity.isPresent();
     }
 
+
     @Override
     public Optional<Collection<E>> findAll() {
         return Optional.ofNullable(entityManager.createQuery("from " + entityClass.getSimpleName(), entityClass).getResultList());
     }
 
     @Override
-    //    @SuppressWarnings("unchecked")
     public Optional<Collection<E>> findAllSQL() {
         List<E> list = new ArrayList<>();
         String entityName = entityClass.getAnnotation(Table.class).name();
@@ -93,7 +89,6 @@ public abstract class ComonRepository<E extends AbstractEntity<ID>, ID extends S
         for (Object o : result) {
             list.add(entityClass.cast(o));
         }
-
         return Optional.of(list);
     }
 
@@ -107,6 +102,17 @@ public abstract class ComonRepository<E extends AbstractEntity<ID>, ID extends S
 
     @Override
     public Optional<Collection<E>> storedProcExecute() {
+                    /*
+            create or replace function find_all(p_db_name IN varchar(20)) returns refcursor as
+            $$
+            declare
+                db_cursor refcursor;
+            begin
+                open db_cursor for execute format('select * from %I', p_db_name);
+                return db_cursor;
+            end ;
+            $$ language plpgsql;
+             */
         List<E> list = new ArrayList<>();
         List<?> result = entityManager.createStoredProcedureQuery("find_all", entityClass)
                 .registerStoredProcedureParameter(1, Class.class, ParameterMode.REF_CURSOR)
@@ -123,8 +129,71 @@ public abstract class ComonRepository<E extends AbstractEntity<ID>, ID extends S
         return Optional.of(list);
     }
 
-}
+    @Override
+    public List<E> findByNameActive(String name) {
+        if(StringUtils.isEmpty(name)) throw new IllegalArgumentException("findByName bad name");
+        final CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        final CriteriaQuery<E> query = criteriaBuilder.createQuery(entityClass);
+        final Root<E> from = query.from(entityClass);
+        final Join<Object, Object> journeys = from.join("journeys", JoinType.LEFT);
 
+        final Predicate byName = criteriaBuilder.equal(from.get("name"), criteriaBuilder.parameter(String.class, "nameParam"));
+        final Predicate active = criteriaBuilder.equal(from.get("active"), criteriaBuilder.parameter(Boolean.class,"activeParam"));
+        return entityManager.createQuery(query.select(from)
+                .where(byName, active))
+                .setParameter("nameParam", name)
+                .setParameter("activeParam", true)
+                .getResultList();
+    }
+
+    @Override
+    public List<E> findByName(String name) {
+        if(StringUtils.isEmpty(name)) throw new IllegalArgumentException("findByName bad name");
+        final CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        final CriteriaQuery<E> query = criteriaBuilder.createQuery(entityClass);
+        final Root<E> from = query.from(entityClass);
+        final Predicate byName = criteriaBuilder.equal(from.get("name"), criteriaBuilder.parameter(String.class, "nameParam"));
+        return entityManager.createQuery(query.select(from).where(byName))
+                .setParameter("nameParam", name)
+                .getResultList();
+    }
+
+    public Optional<List<E>> getSorted(String sortBy, boolean ascending) {
+        final CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        final CriteriaQuery<E> query = criteriaBuilder.createQuery(entityClass);
+        final Root<E> from = query.from(entityClass);
+        final OrderImpl order = new OrderImpl(from.get(sortBy), ascending);
+        List<E> stations = entityManager.createQuery(query.select(from)
+                .orderBy(order)
+        ).getResultList();
+        if (stations.size() == 0) {
+            return Optional.empty();
+        }
+        return Optional.of(stations);
+    }
+
+    //https://www.youtube.com/watch?v=p_sFYoJ4A_E&ab_channel=ThorbenJanssen 3:50
+    public Optional<List<E>> getSortedByPage(int pageSise, int first, String sortBy, boolean ascending) {
+        if (pageSise < 2 || first < 0 || pageSise > 1000)
+            throw new IllegalArgumentException("StationRepository.getSorted insufficient pageination parameters");
+        final CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        final CriteriaQuery<E> criteriaQuery = criteriaBuilder.createQuery(entityClass);
+        final Root<E> from = criteriaQuery.from(entityClass);
+        final OrderImpl order = new OrderImpl(from.get(sortBy), ascending);
+        criteriaQuery.orderBy(order);
+
+        TypedQuery<E> typeQuery = entityManager.createQuery(criteriaQuery);
+        List<E> stations = typeQuery
+                .setFirstResult(first)
+                .setMaxResults(pageSise)
+                .getResultList();
+        if (stations.size() == 0) {
+            return Optional.empty();
+        }
+        return Optional.of(stations);
+    }
+
+}
 
 /*
 create or replace function find_all(p_db_name IN varchar(20)) returns refcursor as
@@ -137,4 +206,5 @@ begin
 end ;
 $$ language plpgsql;
  */
+
 

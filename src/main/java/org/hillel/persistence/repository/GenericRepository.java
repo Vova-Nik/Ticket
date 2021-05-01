@@ -11,6 +11,10 @@ public interface GenericRepository<E, ID> {
 
     Optional<E> findById(ID id);
 
+    Collection<E> findByNameActive(String name);
+
+    Collection<E> findByName(String name);
+
     void removeById(ID id) throws UnableToRemove;
 
     void remove(E entity) throws UnableToRemove;

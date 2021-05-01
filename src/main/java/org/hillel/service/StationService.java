@@ -3,13 +3,15 @@ package org.hillel.service;
 import org.hillel.exceptions.UnableToRemove;
 import org.hillel.persistence.entity.RouteEntity;
 import org.hillel.persistence.entity.StationEntity;
+import org.hillel.persistence.entity.StationEntity_;
 import org.hillel.persistence.repository.RouteRepository;
 import org.hillel.persistence.repository.StationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
-import java.util.Objects;
+
+import java.util.*;
 
 @Service("StationService")
 public class StationService {
@@ -27,12 +29,7 @@ public class StationService {
         return newStation.getId();
     }
 
-    @Transactional
-    public StationEntity getByName(final String stationName) {
-        return stationRepository.getByName(stationName);
-    }
-
-    @Transactional
+    @Transactional(readOnly = true)
     public StationEntity getById(final Long id) {
         if (id == null || id < 0) throw new IllegalArgumentException("StationService.create -  id is not valid");
         return stationRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("There is no station having id=" + id));
@@ -48,7 +45,7 @@ public class StationService {
         se.addRoute(route);
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED)
     public void removeById(final Long id) throws UnableToRemove {
         if (id == null || id < 0) throw new IllegalArgumentException("StationService.removeById -  id is not valid");
         StationEntity station = getById(id);
@@ -62,8 +59,49 @@ public class StationService {
         stationRepository.removeById(id);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
+    public StationEntity getByNameActive(String name){
+        List<StationEntity> stations =  stationRepository.findByNameActive(name);
+         if(stations.size()>1) throw new IllegalArgumentException("There more then 1 Stations with name " + name);
+        if(stations.size()==0) return new StationEntity();
+        return stations.get(0);
+    }
+
+    @Transactional(readOnly = true)
+    public StationEntity getByName(final String name) {
+        List<StationEntity> stations =  stationRepository.findByName(name);
+        if(stations.size()>1) throw new IllegalArgumentException("There more then 1 Stations with name " + name);
+        if(stations.size()==0) return new StationEntity();
+        return stations.get(0);
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
+    public List<StationEntity> getAll() {
+        List<StationEntity> stations = new ArrayList<>();
+        Optional<Collection<StationEntity>> oStations =  stationRepository.findAll();
+        return oStations.map(stationEntities -> (List<StationEntity>) stationEntities).orElse(stations);
+    }
+
+    @Transactional(readOnly = true)
     public boolean exists(Long id) {
         return stationRepository.exists(id);
+    }
+
+    @Transactional(readOnly = true)
+    public List<StationEntity> getSortedByPage(int pageSize, int first, String sortBy){
+        if (!checkSortingCriteria(sortBy))
+            throw new IllegalArgumentException("StationService.getSorted insufficient sortBy parameter");
+        return stationRepository.getSortedByPage(pageSize, first, sortBy, true).orElseGet(ArrayList::new);
+    }
+
+    @Transactional(readOnly = true)
+    public List<StationEntity> getSorted(String sortBy){
+        if (!checkSortingCriteria(sortBy))
+            throw new IllegalArgumentException("StationService.getSorted insufficient sortBy parameter");
+        return stationRepository.getSorted(sortBy, true).orElseGet(ArrayList::new);
+    }
+
+    boolean checkSortingCriteria(String sortBy) {
+        return (sortBy.equals(StationEntity_.ID) || sortBy.equals(StationEntity_.NAME) || sortBy.equals(StationEntity_.ACTIVE) || sortBy.equals(StationEntity_.CREATION_DATE));
     }
 }

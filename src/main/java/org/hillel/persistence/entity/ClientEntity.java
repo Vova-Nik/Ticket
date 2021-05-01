@@ -13,6 +13,8 @@ import java.util.Objects;
 @NoArgsConstructor
 public class ClientEntity extends AbstractEntity<Long> {
 
+    @Column(name="name")
+    private String name;
     @Column(name = "surname")
     private String surname;
     @Column(name = "email")
@@ -21,7 +23,7 @@ public class ClientEntity extends AbstractEntity<Long> {
     private String pwd;
 
     public ClientEntity(String name, String surname) {
-        super.setName(name);
+        this.name = name;
         this.surname = surname;
         email = surname + "@.mail";
         pwd = "qwerty";
@@ -47,12 +49,8 @@ public class ClientEntity extends AbstractEntity<Long> {
         ClientEntity entity = (ClientEntity) o;
         return getId() != null && Objects.equals(getId(), entity.getId());
     }
-    @Override
-    public String getName(){
-        return super.getName();
-    }
-    @Override
+
     public void setName(String name){
-       super.setName(name);
+       this.name=name;
     }
 }

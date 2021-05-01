@@ -23,6 +23,9 @@ import java.util.Objects;
 @DynamicUpdate
 public class RouteEntity extends AbstractEntity<Long> {
 
+    @Column(name = "name")
+    private String name;
+
     @Column(name = "station_from", nullable = false)
     private String stationFrom;
 
@@ -34,6 +37,10 @@ public class RouteEntity extends AbstractEntity<Long> {
 
     @Column(name = "departure_time", nullable = false)
     private Time departureTime;
+
+    @Column(name = "duration", nullable = false)
+    private long duration;
+
     @Column(name = "arrival_time", nullable = false)
     private Time arrivalTime;
 
@@ -43,12 +50,13 @@ public class RouteEntity extends AbstractEntity<Long> {
     @ManyToMany(fetch = FetchType.EAGER, targetEntity = StationEntity.class)
     private List<StationEntity> stations;
 
-    public RouteEntity(final String routeNumber, final StationEntity from, final StationEntity to, final Time departure, final Time arrival) {
+    public RouteEntity(final String routeNumber, final StationEntity from, final StationEntity to, final Time departure, long duration) {
         this.setName(routeNumber);
         this.stationFrom = from.getName();
         this.stationTo = to.getName();
         this.departureTime = departure;
-        this.arrivalTime = arrival;
+        this.duration = duration;
+        this.arrivalTime = new Time(departure.getTime() + duration);
         this.departurePeriod = "daily";
         this.type = VehicleType.TRAIN;
         this.stations = new ArrayList<>();
@@ -106,16 +114,16 @@ public class RouteEntity extends AbstractEntity<Long> {
     }
 
     public StationEntity getFromStation() {
-        for (StationEntity station : stations ) {
-            if(station.getName().equals(this.stationFrom))
+        for (StationEntity station : stations) {
+            if (station.getName().equals(this.stationFrom))
                 return station;
         }
         throw new IllegalArgumentException("Route entity bad station From");
     }
 
     public StationEntity getToStation() {
-        for (StationEntity station : stations ) {
-            if(station.getName().equals(this.stationFrom))
+        for (StationEntity station : stations) {
+            if (station.getName().equals(this.stationFrom))
                 return station;
         }
         throw new IllegalArgumentException("Route entity bad station To");

@@ -19,6 +19,8 @@ import java.util.Objects;
 @Table(name = "stations")
 public class StationEntity extends AbstractEntity<Long> {
 
+    @Column(name="name", nullable = false, unique = true)
+    private String name;
     @Column(name = "longitude", nullable = false)
     private Double longitude;
     @Column(name = "latitude", nullable = false)
@@ -30,12 +32,12 @@ public class StationEntity extends AbstractEntity<Long> {
     @Column(name = "station_type", nullable = false, length = 12)
     @Enumerated(EnumType.STRING)
     private StationType stationType;
-
     @ManyToMany(fetch = FetchType.EAGER)
     private List<RouteEntity> routes = new ArrayList<>();
 
     public StationEntity(final String name) {
-        super.setName(name);
+        if(StringUtils.isEmpty(name)) throw new IllegalArgumentException("StationEntity.constructor bad name");
+        this.name = name;
         longitude = 29.0D;
         latitude = 50.5D;
         description = "Just other Station on ones way";
@@ -79,4 +81,6 @@ public class StationEntity extends AbstractEntity<Long> {
     public int hashCode() {
         return Objects.hash(getId());
     }
+
+
 }

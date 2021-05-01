@@ -28,19 +28,19 @@ public class RouteService {
         return routeRepository.createOrUpdate(route).getId();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public RouteEntity getById(final Long id) {
         if (Objects.isNull(id))
             throw new IllegalArgumentException("TrainRouteService.create - TrainRoutesEntity is not valid");
         return routeRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("RouteService.getById - unable to get data by id=" + id));
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public boolean exists(final Long id) {
         return routeRepository.exists(id);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public boolean containsStation(final RouteEntity route, final StationEntity station) {
         if (Objects.isNull(station) || Objects.isNull(route)) return false;
         return routeRepository.containsStation(route, station);
@@ -48,7 +48,18 @@ public class RouteService {
 
     @Transactional
     public void addStation(final RouteEntity route, final StationEntity station) {
-        if (Objects.isNull(station) || Objects.isNull(route)) throw new IllegalArgumentException("addStation bad data");
+        if (Objects.isNull(station) || Objects.isNull(route)) throw new IllegalArgumentException("RouteService addStation bad data");
         routeRepository.addStation(route, station);
+    }
+
+    @Transactional
+    public void removeById(Long id) throws UnableToRemove {
+        if (Objects.isNull(id)) throw new IllegalArgumentException("RouteService.removeById bad id");
+        RouteEntity route = routeRepository.findById(id).orElseThrow(()->new IllegalArgumentException("RouteService.removeById route not found") );
+        List<StationEntity> stations = route.getStations();
+        for (StationEntity station:stations) {
+            stationRepository.removeRoute(station,route);
+        }
+        routeRepository.removeById(id);
     }
 }
