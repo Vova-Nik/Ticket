@@ -1,18 +1,24 @@
 package org.hillel.service;
 
 import org.hillel.persistence.entity.ClientEntity;
-import org.hillel.persistence.repository.ClientRepository;
+import org.hillel.persistence.jpa.repository.ClientJPARepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service("ClientService")
-public class ClientService {
-    @Autowired
-    ClientRepository clientRepository;
+public class ClientService extends EntityServiceImplementation<ClientEntity, Long>{
 
-    @Transactional
-    public ClientEntity save(ClientEntity client){
-        return clientRepository.createOrUpdate(client);
+    private final ClientJPARepository clientRepository;
+
+    @Autowired
+    public ClientService(ClientJPARepository clientRepository){
+        super(ClientEntity.class, clientRepository);
+        this.clientRepository = clientRepository;
     }
+
+    @Override
+    boolean isValid(ClientEntity client) {
+        return client.isValid();
+    }
+
 }

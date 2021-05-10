@@ -12,10 +12,6 @@ public class Starter {
     public static void main(String[] args) throws SQLException{
         final ConfigurableApplicationContext applicationContext = new AnnotationConfigApplicationContext(RootConfig.class);
         Environment env = applicationContext.getEnvironment();
-
-        VehicleService vehicleService;
-        vehicleService = applicationContext.getBean(VehicleService.class);
-
         try {
             TablesCreator tablesCreator = applicationContext.getBean("TablesCreator", TablesCreator.class);
             tablesCreator.createStationsPool();
@@ -23,7 +19,7 @@ public class Starter {
             tablesCreator.createRoutesPool();
             tablesCreator.createJourneys();
             TicketClient ticketClient = applicationContext.getBean(TicketClient.class);
-            tablesCreator.createClients();
+//            tablesCreator.createClients();
 
             Scanner console = new Scanner(System.in);
             System.out.println("Check database tables if necessary, then input any string in console to finish process");

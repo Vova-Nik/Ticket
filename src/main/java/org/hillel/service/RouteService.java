@@ -3,63 +3,56 @@ package org.hillel.service;
 import org.hillel.exceptions.UnableToRemove;
 import org.hillel.persistence.entity.RouteEntity;
 import org.hillel.persistence.entity.StationEntity;
-import org.hillel.persistence.repository.RouteRepository;
-import org.hillel.persistence.repository.StationRepository;
+import org.hillel.persistence.jpa.repository.RouteJPARepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Objects;
 
 @Service("TrainRouteService")
-public class RouteService {
+public class RouteService extends EntityServiceImplementation<RouteEntity, Long> {
+
+    private final RouteJPARepository routeRepository;
+
     @Autowired
-    private RouteRepository routeRepository;
-    @Autowired
-    private StationRepository stationRepository;
-
-    @Transactional
-    public Long save(final RouteEntity route) {
-        if (route == null || !route.isValid())
-            throw new IllegalArgumentException("TrainRouteService.create - TrainRoutesEntity is not valid");
-        stationRepository.addRoute(route.getFromStation(), route);
-        stationRepository.addRoute(route.getToStation(), route);
-        return routeRepository.createOrUpdate(route).getId();
+    public RouteService(final RouteJPARepository routeRepository) {
+        super(RouteEntity.class, routeRepository);
+        this.routeRepository = routeRepository;
     }
 
-    @Transactional(readOnly = true)
-    public RouteEntity getById(final Long id) {
-        if (Objects.isNull(id))
-            throw new IllegalArgumentException("TrainRouteService.create - TrainRoutesEntity is not valid");
-        return routeRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("RouteService.getById - unable to get data by id=" + id));
+    @Override
+    boolean isValid(RouteEntity entity) {
+        return entity.isValid();
     }
 
-    @Transactional(readOnly = true)
-    public boolean exists(final Long id) {
-        return routeRepository.exists(id);
-    }
+/*    @Autowired
+    private StationJPARepository stationRepository;*/
 
     @Transactional(readOnly = true)
-    public boolean containsStation(final RouteEntity route, final StationEntity station) {
-        if (Objects.isNull(station) || Objects.isNull(route)) return false;
-        return routeRepository.containsStation(route, station);
+    public boolean containsStation(final Long routeId, final StationEntity station) {
+        if (Objects.isNull(station) || Objects.isNull(routeId)) return false;
+        RouteEntity route = routeRepository.findById(routeId).orElseThrow(()->new IllegalArgumentException("RouteService.containsStation can not find route"));
+        return route.containsStation(station);
     }
 
     @Transactional
-    public void addStation(final RouteEntity route, final StationEntity station) {
-        if (Objects.isNull(station) || Objects.isNull(route)) throw new IllegalArgumentException("RouteService addStation bad data");
-        routeRepository.addStation(route, station);
+    public void addStation(final Long routeId, final StationEntity station) {
+        if (Objects.isNull(station) || Objects.isNull(routeId) || !station.isValid()) throw new IllegalArgumentException("RouteService addStation bad data");
+        RouteEntity route = routeRepository.findById(routeId).orElseThrow(()->new IllegalArgumentException("RouteService.containsStation can not find route"));
+        if(route.getStations().contains(station)) return;
+        route.addStation(station);
+        routeRepository.save(route);
     }
 
     @Transactional
-    public void removeById(Long id) throws UnableToRemove {
-        if (Objects.isNull(id)) throw new IllegalArgumentException("RouteService.removeById bad id");
-        RouteEntity route = routeRepository.findById(id).orElseThrow(()->new IllegalArgumentException("RouteService.removeById route not found") );
-        List<StationEntity> stations = route.getStations();
-        for (StationEntity station:stations) {
-            stationRepository.removeRoute(station,route);
-        }
-        routeRepository.removeById(id);
+    public void removeStation(final Long routeId, final StationEntity station) throws UnableToRemove {
+        if (Objects.isNull(station) || Objects.isNull(routeId)) throw new IllegalArgumentException("RouteService addStation bad data");
+        RouteEntity route = routeRepository.findById(routeId).orElseThrow(()->new IllegalArgumentException("RouteService.containsStation can not find route"));
+        if(!route.getStations().contains(station)) return;
+        route.removeStation(station);
+        routeRepository.save(route);
     }
+
+
 }

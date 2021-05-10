@@ -8,8 +8,8 @@ import org.postgresql.ds.PGSimpleDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
@@ -23,6 +23,10 @@ import java.util.Properties;
 @Configuration
 //@PropertySource("classpath:database.properties")
 //@PropertySource("classpath:testdatabase.properties")
+@EnableJpaRepositories(
+        basePackages = {"org.hillel.persistence.jpa.repository"},
+        entityManagerFactoryRef = "emf"
+)
 @EnableTransactionManagement
 public class DatabaseConfig {
     @Autowired

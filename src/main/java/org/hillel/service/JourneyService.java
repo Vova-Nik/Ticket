@@ -1,30 +1,33 @@
 package org.hillel.service;
 
 
-import org.hillel.exceptions.UnableToRemove;
-import org.hillel.persistence.entity.JourneyEntity;
-import org.hillel.persistence.entity.VehicleEntity;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
+import org.hillel.persistence.entity.*;
+import org.hillel.persistence.jpa.repository.JourneyJPARepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+@Service(value = "journeyService")
+public class JourneyService extends EntityServiceImplementation<JourneyEntity,Long>{
 
-public interface JourneyService {
-    Collection<JourneyEntity> find(String stationFrom, String stationTo, LocalDate dateFrom, LocalDate dateTo) throws SQLException;
+    private JourneyJPARepository journeyRepository;
 
-    Long createJourney(JourneyEntity journeyEntity);
+    @Autowired
+    public JourneyService(JourneyJPARepository journeyRepository){
+        super(JourneyEntity.class, journeyRepository);
+        this.journeyRepository = journeyRepository;
+    }
 
-    void deleteById(Long id) throws UnableToRemove;
 
-    void delete(JourneyEntity entity) throws UnableToRemove;
+//    @Transactional
+//    public Long createJourney(final JourneyEntity entity) {
+//        if (entity == null || !entity.isValid()) throw new IllegalArgumentException("JourneyEntity is not valid");
+//        return journeyRepository.createOrUpdate(entity).getId();
+//    }
 
-    boolean exists(Long id);
+    @Override
+    boolean isValid(JourneyEntity entity) {
+        return entity.isValid();
+    }
 
-    List<JourneyEntity> getSortedByPage(int pageSize, int first, String sortBy);
 
-    public List<JourneyEntity> getSorted(String sortBy);
 }

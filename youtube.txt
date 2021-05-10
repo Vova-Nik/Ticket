@@ -64,3 +64,19 @@ Lesson 6
 2:56:40 TransactionalTemplate Bean
 3:06:50 Transaction propagation
     */
+       Lesson 8
+    0:22:00 pom.xml for Spring Data JPA
+    0:28:30 DatabaseConfig
+    1:09:26 @Query in JPARepository Interface
+    1:14:40 Pageble, PageRequest
+    1:18:40 Sorting
+    1:24:05 Page<Entity> interface instead of List<Entity>
+    1:34:10 CommonJPARepository (Обобщенный)
+    1:36:00 Persistable Interface for AbstractModifyEntity
+    1:50:50 @Modifying
+    2:11:00 JpaRepository findAll(Example.of())
+    2:20:00 CommonJpaRepository extending to JpaRepository and @NoRepositoryBean
+    2:24:20 JpaSpecificationExecutor
+    2:44:05 Example + Specification
+    2:51:05 Projections
+        */

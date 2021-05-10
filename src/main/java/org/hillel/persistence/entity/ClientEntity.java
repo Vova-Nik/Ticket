@@ -2,6 +2,7 @@ package org.hillel.persistence.entity;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
@@ -10,6 +11,7 @@ import java.util.Objects;
 @Entity
 @Table(name = "client")
 @Getter
+@Setter
 @NoArgsConstructor
 public class ClientEntity extends AbstractEntity<Long> {
 
@@ -50,7 +52,7 @@ public class ClientEntity extends AbstractEntity<Long> {
         return getId() != null && Objects.equals(getId(), entity.getId());
     }
 
-    public void setName(String name){
-       this.name=name;
-    }
+//    public void setName(String name){
+//       this.name=name;
+//    }
 }

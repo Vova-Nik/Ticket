@@ -3,6 +3,7 @@ package org.hillel.persistence.entity;
 import lombok.*;
 import org.hillel.exceptions.UnableToRemove;
 import org.hillel.persistence.entity.enums.StationType;
+import org.springframework.util.RouteMatcher;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
@@ -19,7 +20,7 @@ import java.util.Objects;
 @Table(name = "stations")
 public class StationEntity extends AbstractEntity<Long> {
 
-    @Column(name="name", nullable = false, unique = true)
+    @Column(name = "name", nullable = false, unique = true)
     private String name;
     @Column(name = "longitude", nullable = false)
     private Double longitude;
@@ -32,11 +33,11 @@ public class StationEntity extends AbstractEntity<Long> {
     @Column(name = "station_type", nullable = false, length = 12)
     @Enumerated(EnumType.STRING)
     private StationType stationType;
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER, targetEntity = RouteEntity.class)
     private List<RouteEntity> routes = new ArrayList<>();
 
     public StationEntity(final String name) {
-        if(StringUtils.isEmpty(name)) throw new IllegalArgumentException("StationEntity.constructor bad name");
+        if (StringUtils.isEmpty(name)) throw new IllegalArgumentException("StationEntity.constructor bad name");
         this.name = name;
         longitude = 29.0D;
         latitude = 50.5D;
@@ -54,7 +55,7 @@ public class StationEntity extends AbstractEntity<Long> {
     public void addRoute(final RouteEntity route) {
         if (Objects.isNull(route)) return;
         if (!route.isValid()) return;
-        if(routes.contains(route)) return;
+        if (routes.contains(route)) return;
         this.routes.add(route);
     }
 
@@ -69,12 +70,23 @@ public class StationEntity extends AbstractEntity<Long> {
         return routesCopy;
     }
 
+    public boolean containsRoute(final Long routeId) {
+        for (RouteEntity route : routes) {
+            assert route.getId() != null;
+            if (route.getId().equals(routeId))
+                return true;
+        }
+        return false;
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         StationEntity that = (StationEntity) o;
-        return Objects.equals(getId(), that.getId());
+//        return Objects.equals(getId(), that.getId());
+        assert this.getId() != null;
+        return this.getId().equals(that.getId());
     }
 
     @Override

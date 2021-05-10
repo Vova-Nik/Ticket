@@ -6,10 +6,11 @@ import org.hillel.persistence.entity.*;
 import org.hillel.persistence.entity.enums.StationType;
 import org.hillel.persistence.entity.enums.VehicleType;
 import org.junit.jupiter.api.*;
-import org.springframework.beans.factory.annotation.BeanFactoryAnnotationUtils;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.env.Environment;
+import org.springframework.dao.DataIntegrityViolationException;
+
 import javax.persistence.PersistenceException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -44,12 +45,11 @@ class TripServiceTest {
     static void setUp() {
         applicationContext = new AnnotationConfigApplicationContext(RootConfig.class);
         Environment env = applicationContext.getEnvironment();
-        journeyService = BeanFactoryAnnotationUtils.qualifiedBeanOfType(applicationContext.getBeanFactory(), JourneyService.class, "transactionalJourneyService");
+        //        journeyService = applicationContext.getBean(JourneyService.class);
         vehicleService = applicationContext.getBean(VehicleService.class);
         stationService = applicationContext.getBean(org.hillel.service.StationService.class);
         routeService = applicationContext.getBean(RouteService.class);
         tripService = applicationContext.getBean(TripService.class);
-
 
         vehicle1 = new VehicleEntity("Chernomoretc", VehicleType.TRAIN);
         vehicleService.save(vehicle1);
@@ -58,83 +58,92 @@ class TripServiceTest {
 
         ods = new StationEntity("Odessa");
         ods.setStationType(StationType.TRANSIT);
-        Long stopid = stationService.createStation(ods);
+        Long stopid = stationService.save(ods).getId();
 
         kyiv = new StationEntity("Kyiv");
         kyiv.setStationType(StationType.TRANSIT);
-        stationService.createStation(kyiv);
+        stationService.save(kyiv);
 
         routeEntity1 = new RouteEntity("10", ods, kyiv, new Time(20, 27, 0), 29800);
-        routeId1 = routeService.save(routeEntity1);
+        routeEntity1 = routeService.save(routeEntity1);
+        assertNotNull(routeEntity1.getId());
+        routeId1 = routeEntity1.getId();
 
-        routeEntity2 = new RouteEntity("10", ods, kyiv, new Time(20, 27, 0), 29800);
-        routeId1 = routeService.save(routeEntity1);
+//        routeEntity2 = new RouteEntity("10", ods, kyiv, new Time(20, 27, 0), 29800);
+//        routeEntity2 = routeService.save(routeEntity2);
+//        assertNotNull(routeEntity2.getId());
+//        routeId2 = routeEntity2.getId();
+
+        routeEntity2 = new RouteEntity("110", ods, kyiv, new Time(18, 05, 0), 30800);
+        routeEntity2 = routeService.save(routeEntity2);
+        assertNotNull(routeEntity2.getId());
+        routeId2 = routeEntity2.getId();
     }
 
     @BeforeEach
     void start() {
-
-    }
-
-    @AfterAll
-    static void tearDown() {
-        applicationContext.close();
     }
 
     @Test
-    void findOrCreateTrip() {
-        LocalDate date1 = LocalDate.now().plusMonths(1);
-        LocalDate date2 = LocalDate.now().plusWeeks(2);
-        TripEntity trip1 = new TripEntity(routeEntity1, vehicle1, date1);
-        tripService.create(trip1);
-        TripEntity trip2 = new TripEntity(routeEntity1, vehicle1, date2);
-        tripService.create(trip2);
+    void findByRouteAndDate() {
+        LocalDate date = LocalDate.now().plusDays(11);
+        TripEntity trip1 = new TripEntity(routeEntity1, vehicle1, date);
+        tripService.save(trip1);
+        LocalDate date1 = LocalDate.now().plusDays(12);
+        TripEntity trip2 = new TripEntity(routeEntity1, vehicle1, date1);
+        tripService.save(trip2);
+        date1 = LocalDate.now().plusDays(13);
+        TripEntity trip3 = new TripEntity(routeEntity1, vehicle1, date1);
+        tripService.save(trip3);
+        date1 = LocalDate.now().plusDays(14);
+        TripEntity trip4 = new TripEntity(routeEntity2, vehicle1, date1);
+        tripService.save(trip4);
+        date1 = LocalDate.now().plusDays(15);
+        TripEntity trip5 = new TripEntity(routeEntity2, vehicle2, date);
+        tripService.save(trip5);
 
+        List<TripEntity> trips = tripService.findByRouteAndDate(routeEntity1.getId(),date);
+        assertEquals(trips.get(0),trip1);
+        assertEquals(1,trips.size());
 
-        long tripId1 = tripService.getByRouteDate(routeEntity1.getId(), date1);
-        long tripId2 = tripService.getByRouteDate(routeEntity1.getId(), date2);
-
-        TripEntity foundTrip1 = tripService.getById(tripId1);
-        System.out.println("---------------------------" + foundTrip1);
-        TripEntity foundtrip2 = tripService.getById(tripId2);
-        System.out.println("---------------------------" + foundtrip2);
-        assertNotEquals(foundTrip1, foundtrip2);
+        tripService.disableById(trip1.getId());
+        trips = tripService.findByRouteAndDateActive(routeEntity1.getId(),date);
+        assertEquals(0,trips.size());
     }
 
     @Test
     void constrainsTest() {
         LocalDate date = LocalDate.now().plusWeeks(3);
         TripEntity trip1 = new TripEntity(routeEntity1, vehicle1, date);
-        tripService.create(trip1);
+        tripService.save(trip1);
         try {
             TripEntity trip2 = new TripEntity(routeEntity1, vehicle1, date);
-            tripService.create(trip2);
+            tripService.save(trip2);
             fail();
-        } catch (PersistenceException e) {
-            System.out.println("Expected PersistenceException " + e.toString());
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.toString().contains("TripService.save such trip already exists"));
         }
     }
 
     @Test
     void getDeparture() {
         RouteEntity routeEntity = new RouteEntity("75", kyiv, ods, new Time(23, 6, 0), 30000);
-        Long routeId = routeService.save(routeEntity);
+        Long routeId = routeService.save(routeEntity).getId();
         LocalDate date = LocalDate.now().plusMonths(1);
         TripEntity trip = new TripEntity(routeEntity, vehicle1, date);
-        tripService.create(trip);
+        tripService.save(trip);
         Instant ins = trip.getDeparture();
         assertTrue(ins.toString().contains("T23:06:00Z"));
-        System.out.println(ins + "------------------------------------------------------");
     }
 
     @Test
     void sellTicket() {
         RouteEntity routeEntity = new RouteEntity("75", kyiv, ods, new Time(23, 6, 0), 30000);
-        Long routeId = routeService.save(routeEntity);
+        Long routeId = routeService.save(routeEntity).getId();
 
         LocalDate date = LocalDate.now().plusWeeks(1);
         TripEntity trip = new TripEntity(routeEntity, vehicle1, date);
-        tripService.create(trip);
+        tripService.save(trip);
 
         int ticketsFree, ticetsOveral;
         ticetsOveral = tripService.getFree(trip.getId());
@@ -146,93 +155,15 @@ class TripServiceTest {
         tripService.sellTicket(trip.getId());
         ticketsFree = tripService.getFree(trip.getId());
         assertEquals(ticetsOveral, (ticketsFree + 3));
-
-    }
-
-    @Test
-    void getMaxFreePlaces() {
-        RouteEntity route1 = new RouteEntity("75", kyiv, ods, new Time(23, 6, 0), 30000);
-        Long routeId1 = routeService.save(route1);
-        RouteEntity route2 = new RouteEntity("218", kyiv, ods, new Time(18, 20, 0), 22000);
-        Long routeId2 = routeService.save(route2);
-
-        LocalDate date1 = LocalDate.now().plusDays(1);
-        LocalDate date2 = LocalDate.now().plusDays(2);
-        LocalDate date3 = LocalDate.now().plusDays(3);
-        LocalDate date4 = LocalDate.now().plusDays(4);
-
-        List<TripEntity> trips = new ArrayList<>();
-        trips.add(new TripEntity(route1, vehicle1, date1));
-        trips.add(new TripEntity(route1, vehicle1, date2));
-        trips.add(new TripEntity(route1, vehicle1, date3));
-        trips.add(new TripEntity(route1, vehicle1, date4));
-
-        trips.add(new TripEntity(route2, vehicle2, date1));
-        trips.add(new TripEntity(route2, vehicle2, date2));
-        trips.add(new TripEntity(route2, vehicle2, date3));
-        trips.add(new TripEntity(route2, vehicle2, date4));
-
-        int sell = 80;
-        for (TripEntity trip : trips) {
-            tripService.create(trip);
-            sell -= 10;
-            for (int i = 0; i < sell; i++) {
-                tripService.sellTicket(trip.getId());
-            }
-        }
-        List<TripEntity> result = tripService.getMaxFreePlaces(4);
-        assertEquals(4, result.size());
-        assertTrue(result.get(0).getTickets() == 1000 && result.get(0).getSold() == 40);
-        assertTrue(result.get(1).getTickets() == 1000 && result.get(1).getSold() == 50);
-        assertTrue(result.get(2).getTickets() == 1000 && result.get(2).getSold() == 60);
-        assertTrue(result.get(3).getTickets() == 1000 && result.get(3).getSold() == 70);
-        tripService.sellTicket(trips.get(0).getId());
-    }
-
-    @Test
-    void getMinFreePlaces() throws UnableToRemove {
-        RouteEntity route1 = new RouteEntity("75", kyiv, ods, new Time(23, 6, 0), 30000);
-        Long routeId1 = routeService.save(route1);
-        RouteEntity route2 = new RouteEntity("218", kyiv, ods, new Time(18, 20, 0), 22000);
-        Long routeId2 = routeService.save(route2);
-
-        LocalDate date1 = LocalDate.now().plusDays(1);
-        LocalDate date2 = LocalDate.now().plusDays(2);
-        LocalDate date3 = LocalDate.now().plusDays(3);
-        LocalDate date4 = LocalDate.now().plusDays(4);
-
-        List<TripEntity> trips = new ArrayList<>();
-        trips.add(new TripEntity(route1, vehicle1, date1));
-        trips.add(new TripEntity(route1, vehicle1, date2));
-        trips.add(new TripEntity(route1, vehicle1, date3));
-        trips.add(new TripEntity(route1, vehicle1, date4));
-
-        trips.add(new TripEntity(route2, vehicle2, date1));
-        trips.add(new TripEntity(route2, vehicle2, date2));
-        trips.add(new TripEntity(route2, vehicle2, date3));
-        trips.add(new TripEntity(route2, vehicle2, date4));
-
-        int sell = 80;
-        for (TripEntity trip : trips) {
-            tripService.create(trip);
-            sell -= 10;
-            for (int i = 0; i < sell; i++) {
-                tripService.sellTicket(trip.getId());
-            }
-        }
-        List<TripEntity> result = tripService.getMinFreePlaces(4);
-        assertEquals(4, result.size());
-        assertTrue(result.get(0).getTickets() == 100 && result.get(0).getSold() == 30);
-        assertTrue(result.get(1).getTickets() == 100 && result.get(1).getSold() == 20);
-        assertTrue(result.get(2).getTickets() == 100 && result.get(2).getSold() == 10);
-        assertTrue(result.get(3).getTickets() == 100 && result.get(3).getSold() == 0);
     }
 
     @AfterEach
-    void clear() throws UnableToRemove {
-        List<TripEntity> trips = tripService.getSorted(TripEntity_.ACTIVE);
-        for (TripEntity trip : trips) {
-            tripService.removeById(trip.getId());
-        }
+    void clear() {
+        tripService.deleteAll();
+    }
+
+    @AfterAll
+    static void tearDown() {
+        applicationContext.close();
     }
 }

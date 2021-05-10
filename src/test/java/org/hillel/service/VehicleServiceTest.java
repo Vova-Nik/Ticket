@@ -1,31 +1,29 @@
 package org.hillel.service;
 
 import org.hillel.config.RootConfig;
-import org.hillel.exceptions.UnableToRemove;
 import org.hillel.persistence.entity.*;
-import org.hillel.persistence.entity.enums.StationType;
 import org.hillel.persistence.entity.enums.VehicleType;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.BeanFactoryAnnotationUtils;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.env.Environment;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Time;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class VehicleServiceTest {
 
     static ConfigurableApplicationContext applicationContext;
     static Environment env;
-    static StationService stationService;
     static VehicleService vehicleService;
+    static StationService stationService;
+
+    VehicleEntity vehicle1;
+    VehicleEntity vehicle2;
+    VehicleEntity vehicle3;
+    VehicleEntity vehicle4;
 
     @BeforeAll
     public static void setUp() {
@@ -35,195 +33,129 @@ class VehicleServiceTest {
         stationService = applicationContext.getBean(org.hillel.service.StationService.class);
     }
 
-    @Test
-    void getByName() {
-    }
-
-    @Test
-    void getAllByNamedQuery() {
-
-        VehicleEntity vehicle1 = new VehicleEntity("Chernomoretc", VehicleType.TRAIN);
+    @BeforeEach
+    public void init() {
+        vehicleService = (VehicleService) BeanFactoryAnnotationUtils.qualifiedBeanOfType(applicationContext.getBeanFactory(), org.hillel.service.VehicleService.class, "vehicleService");
+        vehicle1 = new VehicleEntity("Chernomoretc", VehicleType.TRAIN);
         vehicleService.save(vehicle1);
-        VehicleEntity vehicle2 = new VehicleEntity("Green train", VehicleType.TRAIN);
+        vehicle2 = new VehicleEntity("Green train", VehicleType.TRAIN);
         vehicleService.save(vehicle2);
-        VehicleEntity vehicle3 = new VehicleEntity("Test bus", VehicleType.BUS);
+        vehicle3 = new VehicleEntity("Test bus", VehicleType.BUS);
         vehicleService.save(vehicle3);
+        vehicle4 = new VehicleEntity("Chernomoretc", VehicleType.TRAIN);
+        vehicleService.save(vehicle4);
         assertTrue(vehicleService.exists(vehicle1.getId()));
         assertTrue(vehicleService.exists(vehicle2.getId()));
         assertTrue(vehicleService.exists(vehicle3.getId()));
+        assertTrue(vehicleService.exists(vehicle4.getId()));
+    }
 
-        List<VehicleEntity> vehicles;
-        vehicles = vehicleService.findAllByNamedQuery();
-        assertTrue(vehicles.size() > 0);
-
-        try {
-            vehicleService.deleteById(vehicle1.getId());
-            vehicleService.deleteById(vehicle2.getId());
-            vehicleService.deleteById(vehicle3.getId());
-        } catch (UnableToRemove unableToRemove) {
-            unableToRemove.printStackTrace();
-            fail();
-        }
-
-
+    @AfterEach
+    void clear() {
+        vehicleService.deleteAll();
     }
 
     @Test
-    void findAll() {
-        VehicleEntity vehicle1 = new VehicleEntity("Chernomoretc", VehicleType.TRAIN);
-        vehicleService.save(vehicle1);
-        VehicleEntity vehicle2 = new VehicleEntity("Green train", VehicleType.TRAIN);
-        vehicleService.save(vehicle2);
-        VehicleEntity vehicle3 = new VehicleEntity("Test bus", VehicleType.BUS);
-        vehicleService.save(vehicle3);
-        assertTrue(vehicleService.exists(vehicle1.getId()));
-        assertTrue(vehicleService.exists(vehicle2.getId()));
-        assertTrue(vehicleService.exists(vehicle3.getId()));
+    void comonProc() {
 
-        Collection<VehicleEntity> vehicles;
+        //find all
+        List<VehicleEntity> vehicles = vehicleService.findAll();
+        assertEquals(4, vehicles.size());
+
+        //delete
+        vehicleService.deleteById(vehicle4.getId());
         vehicles = vehicleService.findAll();
-        assertTrue(vehicles.size() > 0);
+        assertEquals(3, vehicles.size());
+        vehicle4 = new VehicleEntity("Chernomoretc", VehicleType.TRAIN);
+        vehicleService.save(vehicle4);
+
+        //exists
+        assertTrue(vehicleService.exists(vehicle4.getId()));
+        vehicleService.deleteById(vehicle4.getId());
+        assertFalse(vehicleService.exists(vehicle4.getId()));
+        vehicle4.setId(null);
+        vehicleService.save(vehicle4);
+        assertTrue(vehicleService.exists(vehicle4.getId()));
+
+        //findByIds
+        vehicles = vehicleService.findByIds(vehicle1.getId(), vehicle2.getId());
+        assertEquals(2, vehicles.size());
+
+        //findByName
+        assertEquals(2, vehicleService.findByName("Chernomoretc").size());
+        assertEquals(1, vehicleService.findByName("Test bus").size());
     }
 
     @Test
-    public void findAllSQL() {
-        VehicleEntity vehicle1 = new VehicleEntity("Chernomoretc", VehicleType.TRAIN);
-        vehicleService.save(vehicle1);
-        VehicleEntity vehicle2 = new VehicleEntity("Green train", VehicleType.TRAIN);
-        vehicleService.save(vehicle2);
-        VehicleEntity vehicle3 = new VehicleEntity("Test bus", VehicleType.BUS);
-        vehicleService.save(vehicle3);
-        assertTrue(vehicleService.exists(vehicle1.getId()));
-        assertTrue(vehicleService.exists(vehicle2.getId()));
-        assertTrue(vehicleService.exists(vehicle3.getId()));
+    void findsTest() {
+        //findAll
+        List<VehicleEntity> vehicles = vehicleService.findAll();
+        assertEquals(4, vehicles.size());
 
-        Collection<VehicleEntity> vehicles;
-        vehicles = vehicleService.findAllSQL();
-        assertTrue(vehicles.size() > 0);
+        //findAllCtive
+        vehicles = vehicleService.findAllCtive();
+        assertEquals(4, vehicles.size());
+        vehicle4.setActive(false);
+        vehicleService.save(vehicle4);
+        vehicles = vehicleService.findAllCtive();
+        assertEquals(3, vehicles.size());
+        vehicle4.setActive(true);
+        vehicleService.save(vehicle4);
+
+        //findByNameActive
+        assertEquals(2, vehicleService.findByNameActive("Chernomoretc").size());
+        vehicle4.setActive(false);
+        vehicleService.save(vehicle4);
+        assertEquals(1, vehicleService.findByNameActive("Chernomoretc").size());
     }
 
     @Test
-    public void findAllCriteria() {
-        VehicleEntity vehicle1 = new VehicleEntity("Chernomoretc", VehicleType.TRAIN);
-        vehicleService.save(vehicle1);
-        VehicleEntity vehicle2 = new VehicleEntity("Green train", VehicleType.TRAIN);
-        vehicleService.save(vehicle2);
-        VehicleEntity vehicle3 = new VehicleEntity("Test bus", VehicleType.BUS);
-        vehicleService.save(vehicle3);
-        assertTrue(vehicleService.exists(vehicle1.getId()));
-        assertTrue(vehicleService.exists(vehicle2.getId()));
-        assertTrue(vehicleService.exists(vehicle3.getId()));
-
-        Collection<VehicleEntity> vehicles;
-        vehicles = vehicleService.findAllCriteria();
-        assertTrue(vehicles.size() > 0);
-    }
-
-    @Test
-    public void storedProcExecute() {
-        VehicleEntity vehicle1 = new VehicleEntity("Chernomoretc", VehicleType.TRAIN);
-        vehicleService.save(vehicle1);
-        VehicleEntity vehicle2 = new VehicleEntity("Green train", VehicleType.TRAIN);
-        vehicleService.save(vehicle2);
-        VehicleEntity vehicle3 = new VehicleEntity("Test bus", VehicleType.BUS);
-        vehicleService.save(vehicle3);
-        assertTrue(vehicleService.exists(vehicle1.getId()));
-        assertTrue(vehicleService.exists(vehicle2.getId()));
-        assertTrue(vehicleService.exists(vehicle3.getId()));
-
-        VehicleEntity vehicle128 = new VehicleEntity("Bus 128", VehicleType.BUS);
-        vehicleService.save(vehicle128);
-        Collection<VehicleEntity> vehicles;
-        vehicles = vehicleService.storedProcExecute();
+    void enableDisableTest() {
+        List<VehicleEntity> vehicles = vehicleService.findAllCtive();
+        assertEquals(4, vehicles.size());
+        vehicleService.disableById(vehicle4.getId());
+        vehicles = vehicleService.findAllCtive();
+        assertEquals(3, vehicles.size());
+        vehicleService.enableById(vehicle4.getId());
+        vehicles = vehicleService.findAllCtive();
         assertEquals(4, vehicles.size());
     }
 
     @Test
-    void getSorted() {
-        VehicleEntity vehicle1 = new VehicleEntity("Chernomoretc", VehicleType.TRAIN);
-        vehicleService.save(vehicle1);
-        VehicleEntity vehicle2 = new VehicleEntity("Green train", VehicleType.TRAIN);
-        vehicleService.save(vehicle2);
-        VehicleEntity vehicle3 = new VehicleEntity("Test bus", VehicleType.BUS);
-        vehicleService.save(vehicle3);
-        assertTrue(vehicleService.exists(vehicle1.getId()));
-        assertTrue(vehicleService.exists(vehicle2.getId()));
-        assertTrue(vehicleService.exists(vehicle3.getId()));
-
-        VehicleEntity veh;
-        for (int i = 0; i < 12; i++) {
-            int prefix = (int) (Math.random() * 100);
-            veh = new VehicleEntity("Vehicle" + prefix + '_' + i, VehicleType.TRAIN);
-            vehicleService.save(veh);
-        }
-
-        List<VehicleEntity> vehicles = vehicleService.getSorted(VehicleEntity_.NAME);
-        assertTrue(vehicles.size() > 8);
-        int aa = vehicles.get(0).getName().compareTo(vehicles.get(8).getName());
-        assertTrue(aa < 0);
-
-        print(vehicles);
-        vehicles = vehicleService.getSorted(StationEntity_.ID);
-        assertTrue(vehicles.size() > 8);
-        assertTrue(vehicles.get(0).getId() < vehicles.get(7).getId());
-        print(vehicles);
-
-        try {
-            for (VehicleEntity vehicle : vehicles
-            ) {
-                vehicleService.deleteById(vehicle.getId());
-            }
-        } catch (UnableToRemove unableToRemove) {
-            unableToRemove.printStackTrace();
-            fail();
-        }
+    void counts(){
+        assertEquals(4,vehicleService.count());
+        assertEquals(2,vehicleService.countByNameActive(vehicle4.getName()));
+        vehicleService.disableById(vehicle4.getId());
+        assertEquals(1,vehicleService.countByNameActive(vehicle4.getName()));
     }
 
     @Test
-    void getSortedByPage() {
-        VehicleEntity vehicle1 = new VehicleEntity("Chernomoretc", VehicleType.TRAIN);
-        vehicleService.save(vehicle1);
-        VehicleEntity vehicle2 = new VehicleEntity("Green train", VehicleType.TRAIN);
-        vehicleService.save(vehicle2);
-        VehicleEntity vehicle3 = new VehicleEntity("Test bus", VehicleType.BUS);
-        vehicleService.save(vehicle3);
-        assertTrue(vehicleService.exists(vehicle1.getId()));
-        assertTrue(vehicleService.exists(vehicle2.getId()));
-        assertTrue(vehicleService.exists(vehicle3.getId()));
+    void getByNameActiveSpecification(){
+        List<VehicleEntity> vehicles = vehicleService.getByNameActiveSpecification(vehicle1.getName());
+        assertEquals(2, vehicles.size());
+        assertEquals(vehicle1.getName(), vehicles.get(0).getName());
+        assertEquals(vehicle1.getName(), vehicles.get(1).getName());
+        vehicleService.disableById(vehicle1.getId());
+        vehicles = vehicleService.getByNameActiveSpecification(vehicle1.getName());
+        assertEquals(1, vehicles.size());
 
-        VehicleEntity veh;
-        for (int i = 0; i < 12; i++) {
-            int prefix = (int) (Math.random() * 100);
-            veh = new VehicleEntity("Vehicle" + prefix + '_' + i, VehicleType.TRAIN);
-            vehicleService.save(veh);
-        }
-
-        List<VehicleEntity> vehicles = vehicleService.getSortedByPage(5, 1, VehicleEntity_.NAME);
-        assertEquals(5, vehicles.size());
-        assertEquals("Green train", vehicles.get(0).getName());
-        print(vehicles);
-
-        vehicles = vehicleService.getSortedByPage(32, 0, VehicleEntity_.NAME);
-        assertEquals(15, vehicles.size());
-
-        try {
-            for (VehicleEntity vehicle : vehicles
-            ) {
-                vehicleService.deleteById(vehicle.getId());
-            }
-        } catch (UnableToRemove unableToRemove) {
-            unableToRemove.printStackTrace();
-            fail();
-        }
     }
 
-    void print(List<VehicleEntity> vehicles) {
-        System.out.println("------------------------------------------------------------");
-        for (VehicleEntity vehicle : vehicles
-        ) {
-            System.out.println(vehicles);
+    @Test
+    void getByNameOrderedSpecification(){
+        VehicleEntity vehicle11;
+        List<VehicleEntity> vehicles = new ArrayList<>();
+        for (int i = 0; i < 12; i++) {
+            vehicle11 =new VehicleEntity("Vehicle" + (32-i), VehicleType.TRAIN);
+            vehicles.add(vehicle11);
         }
-        System.out.println("------------------------------------------------------------");
+        vehicleService.saveList(vehicles);
+        assertEquals(16,vehicleService.count());
+
+        vehicles = vehicleService.getByNameOrderedSpecification(VehicleEntity_.NAME);
+        for (int i = 0; i < 14; i++) {
+            assertTrue(vehicles.get(i).getName().compareTo(vehicles.get(i+1).getName())<=0);
+        }
     }
 
     @AfterAll

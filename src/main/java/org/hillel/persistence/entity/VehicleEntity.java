@@ -3,12 +3,8 @@ package org.hillel.persistence.entity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 import org.hillel.persistence.entity.enums.VehicleType;
-
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -22,7 +18,6 @@ import java.util.Objects;
 
 
 public class VehicleEntity extends AbstractEntity<Long> {
-
     @Column(name="name")
     private String name;
     @Column(name = "vehicle_type", nullable = false)
@@ -74,6 +69,7 @@ public class VehicleEntity extends AbstractEntity<Long> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         VehicleEntity that = (VehicleEntity) o;
+        if(that.getId()==null) return false;
         return Objects.equals(getId(), that.getId());
     }
 
