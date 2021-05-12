@@ -3,14 +3,12 @@ package org.hillel.service;
 import org.hillel.config.RootConfig;
 import org.hillel.persistence.entity.ClientEntity;
 import org.hillel.persistence.entity.ClientEntity_;
-import org.hillel.persistence.entity.VehicleEntity;
 import org.junit.jupiter.api.*;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.env.Environment;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.domain.Example;
-import sun.security.acl.AclEntryImpl;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -189,6 +187,34 @@ class ClientServiceTest {
         clientService.disableById(client11.getId());
         clients = clientService.findAllByExample(example);
         assertEquals(2, clients.size());
+
+    }
+
+
+//    client1 = new ClientEntity("Bob");
+//    client2 = new ClientEntity("Dan");
+//    client4 = new ClientEntity("Cler");
+//    client3 = new ClientEntity("Ann");
+//    client1 = clientService.save(client1);
+//    client2 = clientService.save(client2);
+//    client3 = clientService.save(client3);
+//    client4 = clientService.save(client4);
+
+    @Test
+    void findOneByName(){
+        ClientEntity client11 = clientService.findOneByName("Bob");
+        assertEquals(client11,client1);
+        ClientEntity client12 = new ClientEntity("Bob","Wilson");
+        client12 = clientService.save(client12);
+        try {
+            client11 = clientService.findOneByName("Bob");
+            fail();
+        }catch (IncorrectResultSizeDataAccessException e) {
+            assertTrue(e.toString().contains("IncorrectResultSizeDataAccessException"));
+        }
+        client11 = clientService.findOneByName("cxcxc");
+        assertNull(client11);
+
 
     }
 }

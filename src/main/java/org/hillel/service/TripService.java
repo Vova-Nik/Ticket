@@ -2,8 +2,11 @@ package org.hillel.service;
 
 import org.hillel.persistence.entity.*;
 import org.hillel.persistence.jpa.repository.TripJPARepository;
+import org.hillel.persistence.jpa.repository.specification.TripSpecification;
+import org.hillel.persistence.jpa.repository.specification.VehicleSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
@@ -37,8 +40,6 @@ public class TripService extends EntityServiceImplementation<TripEntity, Long> {
         return result;
     }
 
-
-
     @Transactional
     public boolean sellTicket(Long id) {
         TripEntity trip = findById(id);
@@ -71,22 +72,32 @@ public class TripService extends EntityServiceImplementation<TripEntity, Long> {
         return tripRepository.findByRouteAndDateActive(routeId, departure);
     }
 
-
-/*    @Transactional(readOnly = true)
-    public List<TripEntity> getMaxFreePlaces(int amount) {
-        if(amount<1 || amount>1000) throw new IllegalArgumentException("TripService.getMinFreePlaces amount not valid");
-        return tripRepository.getFreePlaces(amount, false).orElseGet(ArrayList::new);
-    }*/
-
-/*    @Transactional(readOnly = true)
-    public List<TripEntity> getMinFreePlaces(int amount) {
-        if(amount<1 || amount>1000) throw new IllegalArgumentException("TripService.getMinFreePlaces amount not valid");
-        return tripRepository.getFreePlaces(amount, true).orElseGet(ArrayList::new);
-    }*/
-
-
     @Override
     boolean isValid(TripEntity entity) {
         return entity.isValid();
+    }
+
+
+
+
+    @Transactional
+    public List<TripEntity> getByrootSpec(final Long rootId) {
+        if (Objects.isNull(rootId))
+            throw new IllegalArgumentException("TripEntity.getByroot insufficient rootId parameter");
+        return tripRepository.findAll(TripSpecification.findByRoute(rootId));
+    }
+
+    @Transactional
+    public List<TripEntity> getByDateSpec(final LocalDate date) {
+        if (Objects.isNull(date))
+            throw new IllegalArgumentException("TripEntity.getByroot insufficient rootId parameter");
+        return tripRepository.findAll(TripSpecification.findByDate(date));
+    }
+
+    @Transactional
+    public List<TripEntity> getByRootDateSpec(final Long rootId, final LocalDate date) {
+        if (Objects.isNull(rootId) || Objects.isNull(date))
+            throw new IllegalArgumentException("TripEntity.getByroot insufficient rootId parameter");
+        return tripRepository.findAll(TripSpecification.findByRoute(rootId).and(TripSpecification.findByDate(date)));
     }
 }

@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.util.StringUtils;
-
 import javax.persistence.*;
 import java.util.Objects;
 
@@ -13,6 +12,7 @@ import java.util.Objects;
 @Getter
 @Setter
 @NoArgsConstructor
+
 public class ClientEntity extends AbstractEntity<Long> {
 
     @Column(name="name")
@@ -49,10 +49,11 @@ public class ClientEntity extends AbstractEntity<Long> {
         if(this == o) return true;
         if(!(o instanceof ClientEntity)) return false;
         ClientEntity entity = (ClientEntity) o;
-        return getId() != null && Objects.equals(getId(), entity.getId());
+        return(email.equals(entity.email) && pwd.equals(entity.pwd));
     }
 
-//    public void setName(String name){
-//       this.name=name;
-//    }
+    @Override
+    public int hashCode() {
+        return Objects.hash(email, pwd);
+    }
 }

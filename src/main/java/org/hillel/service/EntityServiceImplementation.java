@@ -134,6 +134,11 @@ public abstract class EntityServiceImplementation<E extends AbstractEntity<ID>, 
         return repository.findAll(example);
     }
 
+    @Transactional
+    public E findOneByName(String name){
+        return repository.findOneByName(name);
+    }
+
 
     abstract boolean isValid(E entity);
 

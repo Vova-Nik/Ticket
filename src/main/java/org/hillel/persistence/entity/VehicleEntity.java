@@ -65,17 +65,21 @@ public class VehicleEntity extends AbstractEntity<Long> {
     }
 
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         VehicleEntity that = (VehicleEntity) o;
-        if(that.getId()==null) return false;
-        return Objects.equals(getId(), that.getId());
+        return overalCapacity == that.overalCapacity &&
+                economCapacity == that.economCapacity &&
+                businesCapacity == that.businesCapacity &&
+                comonCapacity == that.comonCapacity &&
+                name.equals(that.name) &&
+                vehicleType == that.vehicleType;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId());
+        return Objects.hash(name, vehicleType, overalCapacity, economCapacity, businesCapacity, comonCapacity);
     }
 
     @Override

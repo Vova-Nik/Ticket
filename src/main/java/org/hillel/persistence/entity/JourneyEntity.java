@@ -6,8 +6,6 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.springframework.util.StringUtils;
-
 import javax.persistence.*;
 import java.sql.Time;
 import java.time.Instant;
@@ -64,16 +62,18 @@ public class JourneyEntity extends AbstractEntity<Long> {
     }
 
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof JourneyEntity)) return false;
-        JourneyEntity entity = (JourneyEntity) o;
-        return getId() != null && Objects.equals(getId(), entity.getId());
+        if (o == null || getClass() != o.getClass()) return false;
+        JourneyEntity that = (JourneyEntity) o;
+        return stationFrom.equals(that.stationFrom) &&
+                stationTo.equals(that.stationTo) &&
+                route.equals(that.route);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(departure, arrival, stationFrom, stationTo, route);
+        return Objects.hash(stationFrom, stationTo, route);
     }
 
     @Override

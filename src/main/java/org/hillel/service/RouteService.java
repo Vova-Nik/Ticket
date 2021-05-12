@@ -26,9 +26,6 @@ public class RouteService extends EntityServiceImplementation<RouteEntity, Long>
         return entity.isValid();
     }
 
-/*    @Autowired
-    private StationJPARepository stationRepository;*/
-
     @Transactional(readOnly = true)
     public boolean containsStation(final Long routeId, final StationEntity station) {
         if (Objects.isNull(station) || Objects.isNull(routeId)) return false;

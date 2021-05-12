@@ -72,17 +72,17 @@ public class TripEntity extends AbstractEntity<Long> {
     }
 
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TripEntity that = (TripEntity) o;
-        if(this.getId() == null || that.getId()==null) return  false;
-        return Objects.equals(getId(), that.getId());
+        return route.equals(that.route) &&
+                departureDate.equals(that.departureDate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId());
+        return Objects.hash(route, departureDate);
     }
 
     @Override

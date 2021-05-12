@@ -3,16 +3,12 @@ package org.hillel.persistence.entity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hillel.exceptions.UnableToRemove;
 import org.hillel.persistence.entity.enums.VehicleType;
-
 import javax.persistence.*;
 import java.sql.Time;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Entity
 @NoArgsConstructor
@@ -48,7 +44,7 @@ public class RouteEntity extends AbstractEntity<Long> {
     private VehicleType type;
 
     @ManyToMany(fetch = FetchType.EAGER, targetEntity = StationEntity.class)
-    private List<StationEntity> stations;
+    private Set<StationEntity> stations;
 
     public RouteEntity(final String routeNumber, final StationEntity from, final StationEntity to, final Time departure, long duration) {
         this.setName(routeNumber);
@@ -59,7 +55,7 @@ public class RouteEntity extends AbstractEntity<Long> {
         this.arrivalTime = new Time(departure.getTime() + duration);
         this.departurePeriod = "daily";
         this.type = VehicleType.TRAIN;
-        this.stations = new ArrayList<>();
+        this.stations = new HashSet<>();
         addStation(from);
         addStation(to);
     }
@@ -80,13 +76,7 @@ public class RouteEntity extends AbstractEntity<Long> {
             throw new UnableToRemove("RouteEntity.removeStation Attempt to delete \"from\" station");
         if (station.getName().equals(stationTo))
             throw new UnableToRemove("RouteEntity.removeStation Attempt to delete \"to\" station");
-
-        for (int i = 0; i < stations.size(); i++) {
-            if ((stations.get(i)).equals(station)) {
-                stations.remove(station);
-                break;
-            }
-        }
+        stations.remove(station);
     }
 
     public boolean containsStation(final StationEntity stationToFind) {
@@ -130,15 +120,18 @@ public class RouteEntity extends AbstractEntity<Long> {
     }
 
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         RouteEntity that = (RouteEntity) o;
-        return Objects.equals(getId(), that.getId());
+        return name.equals(that.name) &&
+                stationFrom.equals(that.stationFrom) &&
+                stationTo.equals(that.stationTo) &&
+                departureTime.equals(that.departureTime);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId());
+        return Objects.hash(name, stationFrom, stationTo, departureTime);
     }
 }

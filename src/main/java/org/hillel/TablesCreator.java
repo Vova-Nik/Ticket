@@ -3,6 +3,7 @@ package org.hillel;
 import org.hillel.persistence.entity.*;
 import org.hillel.persistence.entity.enums.StationType;
 import org.hillel.persistence.entity.enums.VehicleType;
+import org.hillel.persistence.jpa.repository.StationJPARepository;
 import org.hillel.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -17,7 +18,7 @@ import java.util.List;
 public class TablesCreator {
 
     @Autowired
-    StationService stationService;
+    StationService stationService;  // =  new StationService(StationJPARepository stationRepository);
 
     public void createStationsPool() {
 
@@ -131,6 +132,7 @@ public class TablesCreator {
         journeys.add(journeyEntity2);
         journeys.add(journeyEntity3);
     }
+
 
 
 }

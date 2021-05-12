@@ -17,13 +17,6 @@ public class JourneyService extends EntityServiceImplementation<JourneyEntity,Lo
         this.journeyRepository = journeyRepository;
     }
 
-
-//    @Transactional
-//    public Long createJourney(final JourneyEntity entity) {
-//        if (entity == null || !entity.isValid()) throw new IllegalArgumentException("JourneyEntity is not valid");
-//        return journeyRepository.createOrUpdate(entity).getId();
-//    }
-
     @Override
     boolean isValid(JourneyEntity entity) {
         return entity.isValid();

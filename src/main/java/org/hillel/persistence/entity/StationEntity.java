@@ -1,16 +1,12 @@
 package org.hillel.persistence.entity;
 
 import lombok.*;
-import org.hillel.exceptions.UnableToRemove;
 import org.hillel.persistence.entity.enums.StationType;
-import org.springframework.util.RouteMatcher;
 import org.springframework.util.StringUtils;
-
 import javax.persistence.*;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @NoArgsConstructor
@@ -18,6 +14,7 @@ import java.util.Objects;
 @Setter
 @ToString
 @Table(name = "stations")
+
 public class StationEntity extends AbstractEntity<Long> {
 
     @Column(name = "name", nullable = false, unique = true)
@@ -33,8 +30,9 @@ public class StationEntity extends AbstractEntity<Long> {
     @Column(name = "station_type", nullable = false, length = 12)
     @Enumerated(EnumType.STRING)
     private StationType stationType;
-    @ManyToMany(fetch = FetchType.EAGER, targetEntity = RouteEntity.class)
-    private List<RouteEntity> routes = new ArrayList<>();
+    @ManyToMany(fetch = FetchType.EAGER)
+//    @OneToMany(mappedBy="stations", fetch = FetchType.EAGER, targetEntity = RouteEntity.class)
+    private Set<RouteEntity> routes = new HashSet<>();
 
     public StationEntity(final String name) {
         if (StringUtils.isEmpty(name)) throw new IllegalArgumentException("StationEntity.constructor bad name");
@@ -65,9 +63,16 @@ public class StationEntity extends AbstractEntity<Long> {
         this.routes.remove(route);
     }
 
-    public List<RouteEntity> getConnectedRoutes() {
-        List<RouteEntity> routesCopy = new ArrayList<>(routes);
-        return routesCopy;
+    public Set<RouteEntity> getConnectedRoutes() {
+        return new HashSet<>(routes);
+    }
+
+    public Set<Long> getConnectedRoutesIds() {
+        Set<Long> ids =
+                routes.stream()
+                        .map(AbstractEntity::getId)
+                        .collect(Collectors.toSet());
+        return ids;
     }
 
     public boolean containsRoute(final Long routeId) {
@@ -80,19 +85,15 @@ public class StationEntity extends AbstractEntity<Long> {
     }
 
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         StationEntity that = (StationEntity) o;
-//        return Objects.equals(getId(), that.getId());
-        assert this.getId() != null;
-        return this.getId().equals(that.getId());
+        return name.equals(that.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId());
+        return Objects.hash(name);
     }
-
-
 }

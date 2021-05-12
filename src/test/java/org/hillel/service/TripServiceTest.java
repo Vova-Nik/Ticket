@@ -1,7 +1,6 @@
 package org.hillel.service;
 
 import org.hillel.config.RootConfig;
-import org.hillel.exceptions.UnableToRemove;
 import org.hillel.persistence.entity.*;
 import org.hillel.persistence.entity.enums.StationType;
 import org.hillel.persistence.entity.enums.VehicleType;
@@ -9,13 +8,10 @@ import org.junit.jupiter.api.*;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.env.Environment;
-import org.springframework.dao.DataIntegrityViolationException;
 
-import javax.persistence.PersistenceException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.sql.Time;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,8 +28,8 @@ class TripServiceTest {
 
     static long routeId1;
     static long routeId2;
-    static RouteEntity routeEntity1;
-    static RouteEntity routeEntity2;
+    static RouteEntity routeEntity1, routeEntity2, routeEntity3;
+
     static VehicleEntity vehicle1;
     static VehicleEntity vehicle2;
     static JourneyEntity journeyEntity1;
@@ -69,15 +65,15 @@ class TripServiceTest {
         assertNotNull(routeEntity1.getId());
         routeId1 = routeEntity1.getId();
 
-//        routeEntity2 = new RouteEntity("10", ods, kyiv, new Time(20, 27, 0), 29800);
-//        routeEntity2 = routeService.save(routeEntity2);
-//        assertNotNull(routeEntity2.getId());
-//        routeId2 = routeEntity2.getId();
-
-        routeEntity2 = new RouteEntity("110", ods, kyiv, new Time(18, 05, 0), 30800);
+        routeEntity2 = new RouteEntity("110", ods, kyiv, new Time(18, 5, 0), 30800);
         routeEntity2 = routeService.save(routeEntity2);
         assertNotNull(routeEntity2.getId());
         routeId2 = routeEntity2.getId();
+
+        routeEntity3 = new RouteEntity("11", kyiv, ods, new Time(21, 15, 0), 29300);
+        routeEntity3 = routeService.save(routeEntity3);
+        assertNotNull(routeEntity3.getId());
+
     }
 
     @BeforeEach
@@ -102,13 +98,13 @@ class TripServiceTest {
         TripEntity trip5 = new TripEntity(routeEntity2, vehicle2, date);
         tripService.save(trip5);
 
-        List<TripEntity> trips = tripService.findByRouteAndDate(routeEntity1.getId(),date);
-        assertEquals(trips.get(0),trip1);
-        assertEquals(1,trips.size());
+        List<TripEntity> trips = tripService.findByRouteAndDate(routeEntity1.getId(), date);
+        assertEquals(trips.get(0), trip1);
+        assertEquals(1, trips.size());
 
         tripService.disableById(trip1.getId());
-        trips = tripService.findByRouteAndDateActive(routeEntity1.getId(),date);
-        assertEquals(0,trips.size());
+        trips = tripService.findByRouteAndDateActive(routeEntity1.getId(), date);
+        assertEquals(0, trips.size());
     }
 
     @Test
@@ -155,6 +151,67 @@ class TripServiceTest {
         tripService.sellTicket(trip.getId());
         ticketsFree = tripService.getFree(trip.getId());
         assertEquals(ticetsOveral, (ticketsFree + 3));
+    }
+
+    @Test
+    void findByRootSpecification() {
+        LocalDate date = LocalDate.now().plusDays(11);
+        TripEntity trip1 = new TripEntity(routeEntity1, vehicle1, date);
+        tripService.save(trip1);
+        LocalDate date1 = LocalDate.now().plusDays(12);
+        TripEntity trip2 = new TripEntity(routeEntity1, vehicle1, date1);
+        tripService.save(trip2);
+        date1 = LocalDate.now().plusDays(13);
+        TripEntity trip3 = new TripEntity(routeEntity1, vehicle1, date1);
+        tripService.save(trip3);
+        date1 = LocalDate.now().plusDays(14);
+        TripEntity trip4 = new TripEntity(routeEntity2, vehicle1, date1);
+        tripService.save(trip4);
+        date1 = LocalDate.now().plusDays(15);
+        TripEntity trip5 = new TripEntity(routeEntity2, vehicle2, date);
+        tripService.save(trip5);
+
+        List<TripEntity> trips = tripService.getByrootSpec(routeEntity1.getId());
+        assertEquals(3, trips.size());
+        assertTrue(trips.get(0).getRoute().equals(routeEntity1) && trips.get(1).getRoute().equals(routeEntity1) && trips.get(1).getRoute().equals(routeEntity1));
+        trips = tripService.getByrootSpec(routeEntity2.getId());
+        assertEquals(2, trips.size());
+        assertTrue(trips.get(0).getRoute().equals(routeEntity2) && trips.get(1).getRoute().equals(routeEntity2));
+        System.out.println(trips);
+    }
+
+    @Test
+    void findByRootDaySpecification() {
+        LocalDate date1 = LocalDate.now().plusDays(1);
+        LocalDate date2 = LocalDate.now().plusDays(2);
+        TripEntity trip1 = new TripEntity(routeEntity1, vehicle1, date1);
+        tripService.save(trip1);
+        TripEntity trip2 = new TripEntity(routeEntity1, vehicle1, date2);
+        tripService.save(trip2);
+        TripEntity trip3 = new TripEntity(routeEntity2, vehicle2, date1);
+        tripService.save(trip3);
+        TripEntity trip4 = new TripEntity(routeEntity2, vehicle1, date2);
+        tripService.save(trip4);
+        TripEntity trip5 = new TripEntity(routeEntity3, vehicle2, date1);
+        tripService.save(trip5);
+        TripEntity trip6 = new TripEntity(routeEntity3, vehicle2, date2);
+        tripService.save(trip6);
+
+        List<TripEntity> trips = tripService.getByDateSpec(date2);
+        assertEquals(3, trips.size());
+        assertTrue(trips.contains(trip2) && trips.contains(trip4) && trips.contains(trip6));
+
+        trips = tripService.getByRootDateSpec(routeEntity1.getId(), date2);
+        assertEquals(1, trips.size());
+        assertEquals(trip2,trips.get(0));
+
+        LocalDate date3 = LocalDate.now().plusDays(12);
+        trips = tripService.getByRootDateSpec(routeEntity1.getId(), date3);
+        assertEquals(0, trips.size());
+
+        trips = tripService.getByRootDateSpec(1000L, date2);
+        assertEquals(0, trips.size());
+
     }
 
     @AfterEach

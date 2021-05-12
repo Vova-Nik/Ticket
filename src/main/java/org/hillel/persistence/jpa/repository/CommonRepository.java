@@ -1,7 +1,5 @@
 package org.hillel.persistence.jpa.repository;
 
-import org.hillel.persistence.entity.TripEntity;
-import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,7 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.query.Param;
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.util.List;
 
 @NoRepositoryBean
@@ -34,6 +31,8 @@ public interface CommonRepository<E extends Persistable<ID>, ID extends Serializ
 
     long count();
 
+    E findOneByName(String name);
+
     @Query("select e from #{#entityName} e where  e.name=:name")
     List<E> findByName(@Param("name")String name);
 
@@ -42,5 +41,7 @@ public interface CommonRepository<E extends Persistable<ID>, ID extends Serializ
 
     @Query("select e from #{#entityName} e where e.active = true ")
     List<E> findActiveSortedByPage(Pageable page);
+
+
 
 }

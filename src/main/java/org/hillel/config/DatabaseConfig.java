@@ -21,8 +21,6 @@ import javax.sql.DataSource;
 import java.util.Properties;
 
 @Configuration
-//@PropertySource("classpath:database.properties")
-//@PropertySource("classpath:testdatabase.properties")
 @EnableJpaRepositories(
         basePackages = {"org.hillel.persistence.jpa.repository"},
         entityManagerFactoryRef = "emf"
@@ -44,8 +42,7 @@ public class DatabaseConfig {
         config.setMaximumPoolSize(150);
         config.setMinimumIdle(30);
 
-        HikariDataSource ds = new HikariDataSource(config);
-        return ds;
+        return new HikariDataSource(config);
     }
 
     @Bean
@@ -68,7 +65,7 @@ public class DatabaseConfig {
         jpaTransactionManager.setEntityManagerFactory(entityManagerFactory);
         jpaTransactionManager.setDataSource(dataSource());
 
-        jpaTransactionManager.setDefaultTimeout(50);
+        jpaTransactionManager.setDefaultTimeout(40);
 
         return jpaTransactionManager;
     }

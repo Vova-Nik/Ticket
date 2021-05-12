@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.util.Scanner;
 
 public class Starter {
-    public static void main(String[] args) throws SQLException{
+    public static void main(String[] args) {
         final ConfigurableApplicationContext applicationContext = new AnnotationConfigApplicationContext(RootConfig.class);
         Environment env = applicationContext.getEnvironment();
         try {
@@ -19,7 +19,6 @@ public class Starter {
             tablesCreator.createRoutesPool();
             tablesCreator.createJourneys();
             TicketClient ticketClient = applicationContext.getBean(TicketClient.class);
-//            tablesCreator.createClients();
 
             Scanner console = new Scanner(System.in);
             System.out.println("Check database tables if necessary, then input any string in console to finish process");
