@@ -77,9 +77,8 @@ public class StationService {
 
     @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
     public List<StationEntity> getAll() {
-        List<StationEntity> stations = new ArrayList<>();
-        Optional<Collection<StationEntity>> oStations =  stationRepository.findAll();
-        return oStations.map(stationEntities -> (List<StationEntity>) stationEntities).orElse(stations);
+        Collection<StationEntity> oStations =  stationRepository.findAll();
+        return  (List<StationEntity>)oStations;
     }
 
     @Transactional(readOnly = true)

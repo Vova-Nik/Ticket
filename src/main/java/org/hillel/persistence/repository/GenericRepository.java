@@ -3,7 +3,6 @@ package org.hillel.persistence.repository;
 import org.hillel.exceptions.UnableToRemove;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 
 public interface GenericRepository<E, ID> {
@@ -21,13 +20,13 @@ public interface GenericRepository<E, ID> {
 
     Collection<E> findByIds(ID... ids);
 
-    Optional<Collection<E>> findAll();
+    Collection<E> findAll();
 
-    Optional<Collection<E>> findAllSQL();
+    Collection<E> findAllSQL();
 
-    Optional<Collection<E>> findAllCriteria();
+    Collection<E> findAllCriteria();
 
-    Optional<Collection<E>> storedProcExecute();
+    Collection<E> storedProcExecute();
 
     boolean exists(ID id);
 

@@ -121,6 +121,8 @@ class VehicleServiceTest {
 
     @Test
     public void storedProcExecute() {
+        //  SELECT prosrc FROM pg_proc WHERE proname = 'find_all';
+        //  DROP FUNCTION find_all;
         VehicleEntity vehicle1 = new VehicleEntity("Chernomoretc", VehicleType.TRAIN);
         vehicleService.save(vehicle1);
         VehicleEntity vehicle2 = new VehicleEntity("Green train", VehicleType.TRAIN);

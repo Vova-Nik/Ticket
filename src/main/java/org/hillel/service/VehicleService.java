@@ -23,9 +23,9 @@ public class VehicleService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<VehicleEntity> getByName(final String name) {
+    public VehicleEntity getByName(final String name) {
         if (name == null) throw new IllegalArgumentException("VehicleService.getByName");
-        return (vehicleRepository.getByName(name));
+        return vehicleRepository.getByName(name).orElseThrow(()->new IllegalArgumentException("VehicleService.getByName"));
     }
 
     @Transactional
@@ -54,22 +54,22 @@ public class VehicleService {
 
     @Transactional(readOnly = true)
     public Collection<VehicleEntity> findAll() {
-        return vehicleRepository.findAll().orElse(new ArrayList<>());
+        return vehicleRepository.findAll();
     }
 
     @Transactional(readOnly = true)
     public Collection<VehicleEntity> findAllSQL() {
-       return vehicleRepository.findAllSQL().orElse(new ArrayList<>());
+       return vehicleRepository.findAllSQL();
     }
 
     @Transactional(readOnly = true)
     public Collection<VehicleEntity> findAllCriteria() {
-        return vehicleRepository.findAllCriteria().orElse(new ArrayList<>());
+        return vehicleRepository.findAllCriteria();
     }
 
     @Transactional(readOnly = true)
     public Collection<VehicleEntity> storedProcExecute() {
-        return vehicleRepository.storedProcExecute().orElse(new ArrayList<>());
+        return vehicleRepository.storedProcExecute();
     }
 
     @Transactional(readOnly = true)

@@ -13,6 +13,7 @@ import java.util.*;
 public abstract class ComonRepository<E extends AbstractEntity<ID>, ID extends Serializable> implements GenericRepository<E, ID> {
 
     private final Class<E> entityClass;
+
     @PersistenceContext
     protected EntityManager entityManager;
 
@@ -70,49 +71,38 @@ public abstract class ComonRepository<E extends AbstractEntity<ID>, ID extends S
         return entity.isPresent();
     }
 
-
     @Override
-    public Optional<Collection<E>> findAll() {
-        return Optional.ofNullable(entityManager.createQuery("from " + entityClass.getSimpleName(), entityClass).getResultList());
+    public Collection<E> findAll() {
+        return entityManager.createQuery("from " + entityClass.getSimpleName(), entityClass).getResultList();
     }
 
     @Override
-    public Optional<Collection<E>> findAllSQL() {
+    public Collection<E>  findAllSQL() {
         List<E> list = new ArrayList<>();
         String entityName = entityClass.getAnnotation(Table.class).name();
         if (entityName.length() == 0) throw new IllegalArgumentException("findAllSQL class not found");
         List<?> result = entityManager.createNativeQuery("select * from " + entityName, entityClass).getResultList();
         if (result.size() == 0)
-            return Optional.of(list);
+            return list;
         if (!result.get(0).getClass().equals(entityClass))
-            return Optional.of(list);
+            return list;
         for (Object o : result) {
             list.add(entityClass.cast(o));
         }
-        return Optional.of(list);
+        return list;
     }
 
     @Override
-    public Optional<Collection<E>> findAllCriteria() {
+    public Collection<E> findAllCriteria() {
         final CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         final CriteriaQuery<E> query = criteriaBuilder.createQuery(entityClass);
         final Root<E> from = query.from(entityClass);
-        return Optional.ofNullable(entityManager.createQuery(query.select(from)).getResultList());
+        return entityManager.createQuery(query.select(from)).getResultList();
     }
 
+    // SELECT prosrc FROM pg_proc WHERE proname = 'find_all';
     @Override
-    public Optional<Collection<E>> storedProcExecute() {
-                    /*
-            create or replace function find_all(p_db_name IN varchar(20)) returns refcursor as
-            $$
-            declare
-                db_cursor refcursor;
-            begin
-                open db_cursor for execute format('select * from %I', p_db_name);
-                return db_cursor;
-            end ;
-            $$ language plpgsql;
-             */
+    public Collection<E> storedProcExecute() {
         List<E> list = new ArrayList<>();
         List<?> result = entityManager.createStoredProcedureQuery("find_all", entityClass)
                 .registerStoredProcedureParameter(1, Class.class, ParameterMode.REF_CURSOR)
@@ -120,13 +110,13 @@ public abstract class ComonRepository<E extends AbstractEntity<ID>, ID extends S
                 .setParameter(2, entityClass.getAnnotation(Table.class).name())
                 .getResultList();
         if (result.size() == 0)
-            return Optional.of(list);
+            return list;
         if (!result.get(0).getClass().equals(entityClass))
-            return Optional.of(list);
+            return list;
         for (Object o : result) {
             list.add(entityClass.cast(o));
         }
-        return Optional.of(list);
+        return list;
     }
 
     @Override
@@ -192,19 +182,7 @@ public abstract class ComonRepository<E extends AbstractEntity<ID>, ID extends S
         }
         return Optional.of(stations);
     }
-
 }
 
-/*
-create or replace function find_all(p_db_name IN varchar(20)) returns refcursor as
-$$
-declare
-    db_cursor refcursor;
-begin
-    open db_cursor for execute format('select * from %I', p_db_name);
-    return db_cursor;
-end ;
-$$ language plpgsql;
- */
 
 
