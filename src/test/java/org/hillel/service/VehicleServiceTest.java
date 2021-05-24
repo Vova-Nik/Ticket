@@ -3,21 +3,16 @@ package org.hillel.service;
 import org.hillel.config.RootConfig;
 import org.hillel.exceptions.UnableToRemove;
 import org.hillel.persistence.entity.*;
-import org.hillel.persistence.entity.enums.StationType;
 import org.hillel.persistence.entity.enums.VehicleType;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.BeanFactoryAnnotationUtils;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.env.Environment;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.sql.Time;
 import java.util.Collection;
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class VehicleServiceTest {
@@ -36,12 +31,27 @@ class VehicleServiceTest {
     }
 
     @Test
-    void getByName() {
+    void findByName(){
+        VehicleEntity vehicle1 = new VehicleEntity("Chernomoretc", VehicleType.TRAIN);
+        vehicleService.save(vehicle1);
+        VehicleEntity vehicle2 = new VehicleEntity("Green train", VehicleType.TRAIN);
+        vehicleService.save(vehicle2);
+        VehicleEntity vehicle3 = new VehicleEntity("Test bus", VehicleType.BUS);
+        vehicleService.save(vehicle3);
+        assertTrue(vehicleService.exists(vehicle1.getId()));
+        assertTrue(vehicleService.exists(vehicle2.getId()));
+        assertTrue(vehicleService.exists(vehicle3.getId()));
+
+        assertTrue(vehicleService.getByName(vehicle1.getName()).contains(vehicle1));
+        assertEquals(1, vehicleService.getByName(vehicle1.getName()).size());
+        assertEquals(0, vehicleService.getByName("ccccc123").size());
+        VehicleEntity vehicle11 = new VehicleEntity("Chernomoretc", VehicleType.TRAIN);
+        vehicleService.save(vehicle11);
+        assertEquals(2, vehicleService.getByName(vehicle1.getName()).size());
     }
 
     @Test
     void getAllByNamedQuery() {
-
         VehicleEntity vehicle1 = new VehicleEntity("Chernomoretc", VehicleType.TRAIN);
         vehicleService.save(vehicle1);
         VehicleEntity vehicle2 = new VehicleEntity("Green train", VehicleType.TRAIN);
@@ -55,17 +65,6 @@ class VehicleServiceTest {
         List<VehicleEntity> vehicles;
         vehicles = vehicleService.findAllByNamedQuery();
         assertTrue(vehicles.size() > 0);
-
-        try {
-            vehicleService.deleteById(vehicle1.getId());
-            vehicleService.deleteById(vehicle2.getId());
-            vehicleService.deleteById(vehicle3.getId());
-        } catch (UnableToRemove unableToRemove) {
-            unableToRemove.printStackTrace();
-            fail();
-        }
-
-
     }
 
     @Test
@@ -123,6 +122,11 @@ class VehicleServiceTest {
     public void storedProcExecute() {
         //  SELECT prosrc FROM pg_proc WHERE proname = 'find_all';
         //  DROP FUNCTION find_all;
+
+        Collection<VehicleEntity> vehicles;
+        vehicles = vehicleService.storedProcExecute();
+        int vehiclesInDB = vehicles.size();
+
         VehicleEntity vehicle1 = new VehicleEntity("Chernomoretc", VehicleType.TRAIN);
         vehicleService.save(vehicle1);
         VehicleEntity vehicle2 = new VehicleEntity("Green train", VehicleType.TRAIN);
@@ -135,9 +139,9 @@ class VehicleServiceTest {
 
         VehicleEntity vehicle128 = new VehicleEntity("Bus 128", VehicleType.BUS);
         vehicleService.save(vehicle128);
-        Collection<VehicleEntity> vehicles;
+
         vehicles = vehicleService.storedProcExecute();
-        assertEquals(4, vehicles.size());
+        assertEquals(vehiclesInDB + 4, vehicles.size());
     }
 
     @Test
@@ -169,16 +173,6 @@ class VehicleServiceTest {
         assertTrue(vehicles.size() > 8);
         assertTrue(vehicles.get(0).getId() < vehicles.get(7).getId());
         print(vehicles);
-
-        try {
-            for (VehicleEntity vehicle : vehicles
-            ) {
-                vehicleService.deleteById(vehicle.getId());
-            }
-        } catch (UnableToRemove unableToRemove) {
-            unableToRemove.printStackTrace();
-            fail();
-        }
     }
 
     @Test
@@ -208,15 +202,6 @@ class VehicleServiceTest {
         vehicles = vehicleService.getSortedByPage(32, 0, VehicleEntity_.NAME);
         assertEquals(15, vehicles.size());
 
-        try {
-            for (VehicleEntity vehicle : vehicles
-            ) {
-                vehicleService.deleteById(vehicle.getId());
-            }
-        } catch (UnableToRemove unableToRemove) {
-            unableToRemove.printStackTrace();
-            fail();
-        }
     }
 
     void print(List<VehicleEntity> vehicles) {
@@ -226,6 +211,19 @@ class VehicleServiceTest {
             System.out.println(vehicles);
         }
         System.out.println("------------------------------------------------------------");
+    }
+
+    @AfterEach
+    void clear(){
+        List<VehicleEntity> vehicles = vehicleService.findAll();
+        vehicles.forEach(vehicle -> {
+            try {
+                vehicleService.deleteById(vehicle.getId());
+            } catch (UnableToRemove unableToRemove) {
+                unableToRemove.printStackTrace();
+                fail();
+            }
+        });
     }
 
     @AfterAll

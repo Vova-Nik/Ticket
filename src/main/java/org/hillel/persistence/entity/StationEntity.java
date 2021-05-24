@@ -16,7 +16,7 @@ import java.util.Objects;
 @Getter
 @Setter
 @ToString
-@Table(name = "stations")
+@Table(name = "station")
 public class StationEntity extends AbstractEntity<Long> {
 
     @Column(name="name", nullable = false, unique = true)

@@ -19,7 +19,7 @@ import java.util.*;
 @DynamicUpdate
 @Getter
 @NoArgsConstructor
-@Table(name = "journeys")
+@Table(name = "journey")
 public class JourneyEntity extends AbstractEntity<Long> {
 
     @Column(name="name")

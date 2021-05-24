@@ -18,7 +18,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @Getter
 @Setter
-@Table(name = "routes")
+@Table(name = "route")
 
 @DynamicUpdate
 public class RouteEntity extends AbstractEntity<Long> {

@@ -17,7 +17,7 @@ Creating  when first ticket to this rout sold
 @Getter
 @NoArgsConstructor
 @Table(
-        name = "trips",
+        name = "trip",
         uniqueConstraints=
         @UniqueConstraint(columnNames={"route", "departure"})
 )

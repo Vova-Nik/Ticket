@@ -4,9 +4,11 @@ package org.hillel.service;
 import org.hillel.exceptions.UnableToRemove;
 import org.hillel.persistence.entity.*;
 import org.hillel.persistence.repository.JourneyRepository;
+import org.hillel.persistence.repository.TripRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
@@ -14,10 +16,8 @@ import java.util.*;
 @Service(value = "transactionalJourneyService")
 public class TransactionalJourneyService implements JourneyService {
 
-    @Autowired
-    private JourneyRepository journeyRepository;
-    @Autowired
-    private VehicleService vehicleService;
+
+    private final JourneyRepository journeyRepository;
 
     @Transactional
     @Override
@@ -26,7 +26,9 @@ public class TransactionalJourneyService implements JourneyService {
         return journeyRepository.createOrUpdate(entity).getId();
     }
 
-    TransactionalJourneyService() {
+    @Autowired
+    TransactionalJourneyService(JourneyRepository journeyRepository) {
+        this.journeyRepository = journeyRepository;
     }
 
     @Transactional(readOnly = true)
@@ -43,7 +45,7 @@ public class TransactionalJourneyService implements JourneyService {
     }
 
     @Override
-    public Collection<JourneyEntity> find(final String stationFrom, final String stationTo, final LocalDate dateFrom, final LocalDate dateTo) throws SQLException {
+    public List<JourneyEntity> find(final String stationFrom, final String stationTo, final LocalDate dateFrom, final LocalDate dateTo) throws SQLException {
         return null;
     }
 
@@ -54,7 +56,6 @@ public class TransactionalJourneyService implements JourneyService {
         }
     }
 
-
     @Transactional
     public void delete(final JourneyEntity entity) throws UnableToRemove {
         if (Objects.nonNull(entity)) {
@@ -63,20 +64,20 @@ public class TransactionalJourneyService implements JourneyService {
     }
 
     @Transactional
-    public boolean exists(final Long id){
+    public boolean exists(final Long id) {
         return journeyRepository.exists(id);
     }
 
 
     @Transactional(readOnly = true)
-    public List<JourneyEntity> getSortedByPage(int pageSize, int first, String sortBy){
+    public List<JourneyEntity> getSortedByPage(int pageSize, int first, String sortBy) {
         if (!checkSortingCriteria(sortBy))
             throw new IllegalArgumentException("transactionalJourneyService.getSorted insufficient sortBy parameter");
         return journeyRepository.getSortedByPage(pageSize, first, sortBy, true).orElseGet(ArrayList::new);
     }
 
     @Transactional(readOnly = true)
-    public List<JourneyEntity> getSorted(String sortBy){
+    public List<JourneyEntity> getSorted(String sortBy) {
         if (!checkSortingCriteria(sortBy))
             throw new IllegalArgumentException("transactionalJourneyService.getSorted insufficient sortBy parameter");
         return journeyRepository.getSorted(sortBy, true).orElseGet(ArrayList::new);

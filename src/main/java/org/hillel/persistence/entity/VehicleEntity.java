@@ -15,7 +15,7 @@ import java.util.Objects;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "vehicles")
+@Table(name = "vehicle")
 @NamedQueries(value = {
         @NamedQuery(name = "findAll", query = "SELECT v FROM VehicleEntity v")
 })

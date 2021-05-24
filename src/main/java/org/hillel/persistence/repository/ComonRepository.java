@@ -4,6 +4,7 @@ import org.hibernate.Session;
 import org.hibernate.query.criteria.internal.OrderImpl;
 import org.hillel.exceptions.UnableToRemove;
 import org.hillel.persistence.entity.AbstractEntity;
+import org.hillel.persistence.entity.VehicleEntity;
 import org.springframework.util.StringUtils;
 import javax.persistence.*;
 import javax.persistence.criteria.*;
@@ -181,6 +182,19 @@ public abstract class ComonRepository<E extends AbstractEntity<ID>, ID extends S
             return Optional.empty();
         }
         return Optional.of(stations);
+    }
+
+    @Override
+    public List<E> findAllByNamedQuery(){
+        return entityManager.createNamedQuery("findAll", entityClass).getResultList();
+    }
+
+    @Override
+    public List<E> findAllByStoredProc(){
+        List<?> entities = entityManager.createNamedStoredProcedureQuery("findAllVehicles").getResultList();
+        if(entities.size()==0) throw  new IllegalArgumentException("findAllByStoredProc error");
+        if(entities.get(0).getClass() != entityClass) throw  new IllegalArgumentException("findAllByStoredProc error");
+        return (List<E>)entities;
     }
 }
 

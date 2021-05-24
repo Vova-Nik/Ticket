@@ -1,8 +1,10 @@
 package org.hillel.persistence.repository;
 
 import org.hillel.exceptions.UnableToRemove;
+import org.hillel.persistence.entity.VehicleEntity;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public interface GenericRepository<E, ID> {
@@ -29,5 +31,10 @@ public interface GenericRepository<E, ID> {
     Collection<E> storedProcExecute();
 
     boolean exists(ID id);
+
+    List<E> findAllByNamedQuery();
+
+    List<E> findAllByStoredProc();
+
 
 }
